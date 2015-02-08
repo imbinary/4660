@@ -36,15 +36,15 @@ def main():
             plt.subplot(121), plt.imshow(res, cmap='gray')
             plt.title('Matching Result'), plt.xticks([]), plt.yticks([])
             plt.suptitle(meth)
-            # plt.show()
+            plt.show()
             plt.savefig(meth+"_plot_"+infiles[x])
 
             # Draw rectangle on image where the best score is found
             cv2.rectangle(img, top_left, bottom_right, (127, 0, 127), 2)
             # Display image using OpenCV
 
-            # cv2.imshow('here is Waldo - '+meth, img)
-            # cv2.waitKey(0)
+            cv2.imshow(meth+"_final_"+infiles[x], img)
+            cv2.waitKey(0)
             # Save in file using OpenCV
             cv2.imwrite(meth+"_final_"+infiles[x], img)
             cv2.destroyAllWindows()
