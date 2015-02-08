@@ -37,6 +37,7 @@ def main():
             plt.title('Matching Result'), plt.xticks([]), plt.yticks([])
             plt.suptitle(meth)
             plt.show()
+
             plt.savefig(meth+"_plot_"+infiles[x])
 
             # Draw rectangle on image where the best score is found
