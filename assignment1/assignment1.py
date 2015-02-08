@@ -42,10 +42,10 @@ def main():
             cv2.rectangle(img, top_left, bottom_right, (127, 0, 127), 2)
             # Display image using OpenCV
 
-            cv2.imshow('here is Waldo - '+meth, img)
-            cv2.waitKey(0)
+            # cv2.imshow('here is Waldo - '+meth, img)
+            # cv2.waitKey(0)
             # Save in file using OpenCV
-            cv2.imwrite(meth+" "+infiles[x], img)
+            cv2.imwrite(meth+"_final_"+infiles[x], img)
             cv2.destroyAllWindows()
 
 
