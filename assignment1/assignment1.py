@@ -20,7 +20,7 @@ def main():
         for meth in methods:
             method = eval(meth)
             img = cv2.imread(infiles[x], 1)
-            wi, hi = img.shape[::-1]
+            t, wi, hi = img.shape[::-1]
             img2 = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             template = cv2.imread(intemps[x], 0)
             w, h = template.shape[::-1]
