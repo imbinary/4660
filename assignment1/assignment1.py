@@ -20,6 +20,7 @@ def main():
         for meth in methods:
             method = eval(meth)
             img = cv2.imread(infiles[x], 1)
+            wi, hi = img.shape[::-1]
             img2 = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             template = cv2.imread(intemps[x], 0)
             w, h = template.shape[::-1]
@@ -45,7 +46,7 @@ def main():
             # Display image using OpenCV
             cv2.namedWindow(meth+"_final_"+infiles[x], cv2.WINDOW_NORMAL)
             if x == 1:
-                cv2.resizeWindow(meth+"_final_"+infiles[x], w/2, h/2)
+                cv2.resizeWindow(meth+"_final_"+infiles[x], wi/2, hi/2)
             cv2.imshow(meth+"_final_"+infiles[x], img)
 
             cv2.waitKey(0)
