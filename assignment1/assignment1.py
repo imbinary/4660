@@ -15,13 +15,14 @@ def main():
         # 4 methods for comparison in a list
         methods = ['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR', 'cv2.TM_CCORR_NORMED']
 
-        img = cv2.imread(infiles[x], 1)
-        img2 = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        template = cv2.imread(intemps[x], 0)
-        w, h = template.shape[::-1]
+
 
         for meth in methods:
             method = eval(meth)
+            img = cv2.imread(infiles[x], 1)
+            img2 = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            template = cv2.imread(intemps[x], 0)
+            w, h = template.shape[::-1]
 
             # Apply template Matching
             res = cv2.matchTemplate(img2, template, method)
@@ -36,7 +37,7 @@ def main():
             plt.title('Matching Result'), plt.xticks([]), plt.yticks([])
             plt.suptitle(meth)
             # plt.show()
-            plt.imsave(meth+str(x)+infiles[x], res)
+            plt.savefig(meth+"_plot_"+infiles[x])
 
             # Draw rectangle on image where the best score is found
             cv2.rectangle(img, top_left, bottom_right, (127, 0, 127), 2)
