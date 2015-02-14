@@ -36,7 +36,7 @@ def main():
             plt.plot(121), plt.imshow(res, cmap='gray')
             plt.title('Matching Result'), plt.xticks([]), plt.yticks([])
             plt.suptitle(meth)
-            # plt.show()
+            #plt.show()
 
             # save plot
             plt.savefig(infiles[x].split('.')[0]+"_plot_"+meth.split('.')[1]+"."+infiles[x].split('.')[1])
