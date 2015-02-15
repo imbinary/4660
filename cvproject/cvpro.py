@@ -6,6 +6,7 @@ import os
 import collections
 import random
 import math
+import argparse
 
 def drawMatches(img1, kp1, img2, kp2, matches):
     """
@@ -167,14 +168,20 @@ def cust(iin, iout):
 
 
 def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-i", "--image", required=True, help="Path to the query image")
+    ap.add_argument("-p", "--path", required=True, help="Path to the directory of images")
+    args = vars(ap.parse_args())
+
+    image = args["image"]
+    path = args["path"]
     # Open a file
-    path = "images"
+    # path = "images"
     dirs = os.listdir(path)
     l = len(dirs)
-    # select a random image to use for matching
-    t = random.randint(0, l-1)
-    print str(l) + " images, " + dirs[t] + " was selected"
-    img = cv2.imread(path+'/'+dirs[t], 1)
+
+    print str(l) + " images, " + image + " was selected"
+    img = cv2.imread(path+'/'+image, 1)
 
     # collection for data
     flist = {}
@@ -213,7 +220,7 @@ def main():
     # show the query image
     fig = plt.figure("Query")
     ax = fig.add_subplot(1, 1, 1)
-    ax.set_title("%s" % dirs[t])
+    ax.set_title("%s" % image)
     # need to convert to RGB for plt
     ax.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
     plt.axis("off")
