@@ -85,8 +85,10 @@ def hist(iin, iout):
 
     hist2 = cv2.calcHist([iout], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])
     hist2 = cv2.normalize(hist2, hist2).flatten()
-
-    return 1 - cv2.compareHist(hist1, hist2, 3)
+    print float(1 - cv2.compareHist(hist1, hist2, 0) + cv2.compareHist(hist1, hist2, 3))/float(2)
+    print cv2.compareHist(hist1, hist2, 0)
+    print 1 - cv2.compareHist(hist1, hist2, 3)
+    return float(cv2.compareHist(hist1, hist2, 0) + (1-cv2.compareHist(hist1, hist2, 3)))/float(2)
 
 
 # template matching
@@ -130,7 +132,7 @@ def sift(iin, iout):
     # Apply ratio test
     good = []
     for m, n in matches:
-        if m.distance < 0.75*n.distance:
+        if m.distance < 0.99*n.distance:
             good.append([m])
     print str(len(matches)) + " " + str(len(good))+" " + str(float(len(good))/len(kp1))
 
@@ -152,7 +154,7 @@ def cust(iin, iout):
     # Apply ratio test
     good = []
     for m, n in matches:
-        if m.distance < 0.75*n.distance:
+        if m.distance < 0.99*n.distance:
             good.append([m])
     print str(len(kp1)) + " " + str(len(good))+" " + str(float(len(good))/float(len(kp1)))
 
@@ -177,7 +179,7 @@ def main():
         flist[fn] = 0
         img2 = cv2.imread(path+'/'+fn, 1)
         flist[fn] += hist(img, img2)
-        flist[fn] += tmatch(img2, img)
+        flist[fn] += tmatch(img, img2)
         flist[fn] += sift(img, img2)
         flist[fn] += cust(img, img2)
         print fn + " " + str(flist[fn])
