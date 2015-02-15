@@ -4,7 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import collections
-import random
 import math
 import argparse
 
@@ -149,26 +148,21 @@ def sift(iin, iout):
 
 # custom test
 def cust(iin, iout):
-    img1 = cv2.cvtColor(iin, cv2.COLOR_BGR2GRAY)
-    img2 = cv2.cvtColor(iout, cv2.COLOR_BGR2GRAY)
 
-    ret1, thresh1 = cv2.threshold(img1, 127, 255, 0)
-    contours1, hierarchy1 = cv2.findContours(thresh1, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    img1 = iin[200:250, 200:250]
+    img2 = iout[200:250, 200:250]
+    img1 = cv2.GaussianBlur(img1, (5, 5), 0)
+    img2 = cv2.GaussianBlur(img2, (5, 5), 0)
+    hist1 = cv2.calcHist([img1], [0, 1, 2], None, [256, 256, 256], [0, 256, 0, 256, 0, 256])
+    hist1 = cv2.normalize(hist1, hist1).flatten()
 
-    ret2, thresh2 = cv2.threshold(img2, 127, 255, 0)
-    contours2, hierarchy2 = cv2.findContours(thresh2, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    hist2 = cv2.calcHist([img2], [0, 1, 2], None, [256, 256, 256], [0, 256, 0, 256, 0, 256])
+    hist2 = cv2.normalize(hist2, hist2).flatten()
+    print "cust: " + str(cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_CORREL)) + " " + str(1-cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_BHATTACHARYYA))
 
-    for (cnt) in (contours1):
-                # print "Looking through contours"
-                approx1 = cv2.approxPolyDP(cnt, 0.01*cv2.arcLength(cnt, True), True)
-                # approx2 = cv2.approxPolyDP(cnt2, 0.01*cv2.arcLength(cnt, True), True)
-                # print len(approx)
-                print str(len(approx1)) # + " " + str(len(approx2))
+    # print 1 - cv2.compareHist(hist1, hist2, 3)
+    return float(cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_CORREL) + (1-cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_BHATTACHARYYA)))/float(2)
 
-
-    print str(len(contours1)) + " " + str(len(contours2))
-
-    return 0
 
 def top4(flist, path, tst):
     # sort for best match
@@ -236,7 +230,7 @@ def main():
     top4(tlist, path, " temp")
     top4(slist, path, " sift")
     top4(clist, path, " cust")
-    top4(flist, path, " total")
+    # top4(flist, path, " total")
     # show the query image
     fig = plt.figure("Query")
     ax = fig.add_subplot(1, 1, 1)
@@ -246,7 +240,7 @@ def main():
     plt.axis("off")
 
     # show them
-    # plt.show()
+    plt.show()
 
 
 if __name__ == "__main__":
