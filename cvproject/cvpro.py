@@ -86,7 +86,7 @@ def hist(iin, iout):
 
     hist2 = cv2.calcHist([iout], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])
     hist2 = cv2.normalize(hist2, hist2).flatten()
-    print float(1 - cv2.compareHist(hist1, hist2, 0) + cv2.compareHist(hist1, hist2, 3))/float(2)
+    print "hist: " + str(float(cv2.compareHist(hist1, hist2, 0) + (1-cv2.compareHist(hist1, hist2, 3)))/float(2))
     # print cv2.compareHist(hist1, hist2, 0)
     # print 1 - cv2.compareHist(hist1, hist2, 3)
     return float(cv2.compareHist(hist1, hist2, 0) + (1-cv2.compareHist(hist1, hist2, 3)))/float(2)
@@ -118,7 +118,7 @@ def tmatch(intemp, infile):
         # find corners of matched image
         top_left = max_loc
         bottom_right = (top_left[0] + w, top_left[1] + h)
-        print "{} {} {} {}".format(top_left, bottom_right, str(1-math.sqrt((top_left[0]-100)**2 + (top_left[1]-100)**2)/660.0), str(1-math.sqrt((bottom_right[0]-300)**2 + (bottom_right[1]-300)**2)/453.0))
+        print "template: {} {} {} {}".format(top_left, bottom_right, str(1-math.sqrt((top_left[0]-100)**2 + (top_left[1]-100)**2)/660.0), str(1-math.sqrt((bottom_right[0]-300)**2 + (bottom_right[1]-300)**2)/453.0))
     return ((1-math.sqrt((top_left[0]-100)**2 + (top_left[1]-100)**2)/660.0) + (1-math.sqrt((bottom_right[0]-300)**2 + (bottom_right[1]-300)**2)/453.0))/2.0
 
 
@@ -139,7 +139,7 @@ def sift(iin, iout):
     for m, n in matches:
         if m.distance < 0.99*n.distance:
             good.append([m])
-    print str(len(matches)) + " " + str(len(good))+" " + str(float(len(good))/len(kp1))
+    print "sift: " + str(len(matches)) + " " + str(len(good))+" " + str(float(len(good))/len(kp1))
 
     return float(len(good))/float(len(kp1))
 
@@ -161,7 +161,7 @@ def cust(iin, iout):
     for m, n in matches:
         if m.distance < 0.99*n.distance:
             good.append([m])
-    print str(len(kp1)) + " " + str(len(good))+" " + str(float(len(good))/float(len(kp1)))
+    print "cust: " + str(len(kp1)) + " " + str(len(good))+" " + str(float(len(good))/float(len(kp1)))
 
     return float(len(good))/float(len(kp1))
 
