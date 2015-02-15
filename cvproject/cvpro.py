@@ -86,8 +86,8 @@ def hist(iin, iout):
     hist2 = cv2.calcHist([iout], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])
     hist2 = cv2.normalize(hist2, hist2).flatten()
     print float(1 - cv2.compareHist(hist1, hist2, 0) + cv2.compareHist(hist1, hist2, 3))/float(2)
-    print cv2.compareHist(hist1, hist2, 0)
-    print 1 - cv2.compareHist(hist1, hist2, 3)
+    # print cv2.compareHist(hist1, hist2, 0)
+    # print 1 - cv2.compareHist(hist1, hist2, 3)
     return float(cv2.compareHist(hist1, hist2, 0) + (1-cv2.compareHist(hist1, hist2, 3)))/float(2)
 
 
@@ -95,15 +95,19 @@ def hist(iin, iout):
 def tmatch(intemp, infile):
 
     # 4 methods for comparison in a list
-    methods = ['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR', 'cv2.TM_CCORR_NORMED']
-
+    methods = ['cv2.TM_CCOEFF']
+    template = cv2.cvtColor(intemp, cv2.COLOR_BGR2GRAY)
+    template = template[100:300, 100:300]
+    # NOTE: its img[y: y + h, x: x + w] and *not* img[x: x + w, y: y + h]
+    # cv2.imshow("cropped", template)
+    # cv2.waitKey(0)
     for meth in methods:
         method = eval(meth)
 
         t, wi, hi = infile.shape[::-1]
         # make grayscale image for matching
         img2 = cv2.cvtColor(infile, cv2.COLOR_BGR2GRAY)
-        template = cv2.cvtColor(intemp, cv2.COLOR_BGR2GRAY)
+
         w, h = template.shape[::-1]
 
         # Apply template Matching
@@ -113,8 +117,8 @@ def tmatch(intemp, infile):
         # find corners of matched image
         top_left = max_loc
         bottom_right = (top_left[0] + w, top_left[1] + h)
-        # print "{} {}".format(top_left, bottom_right)
-        return 0
+        print "{} {}".format(top_left, bottom_right)
+    return 0
 
 
 # sift
@@ -182,7 +186,7 @@ def main():
         flist[fn] += tmatch(img, img2)
         flist[fn] += sift(img, img2)
         flist[fn] += cust(img, img2)
-        print fn + " " + str(flist[fn])
+        print fn + " " + str(flist[fn]) + "\n"
 
 
 
@@ -208,6 +212,7 @@ def main():
     # show the query image
     fig = plt.figure("Query")
     ax = fig.add_subplot(1, 1, 1)
+    ax.set_title("%s" % dirs[t])
     # need to convert to RGB for plt
     ax.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
     plt.axis("off")
