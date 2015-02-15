@@ -80,9 +80,11 @@ def drawMatches(img1, kp1, img2, kp2, matches):
 
 # tests each give a score from 0-1
 # histogram test
-def hist(iin, iout):
+def hist(iin, iout, name):
     img1 = cv2.cvtColor(iin, cv2.COLOR_BGR2HSV)
     img2 = cv2.cvtColor(iout, cv2.COLOR_BGR2HSV)
+
+    plt.figure(name)
 
     hist1 = cv2.calcHist([img1], [0, 1, 2], None, [256, 256, 256], [0, 256, 0, 256, 0, 256])
     hist1 = cv2.normalize(hist1, hist1).flatten()
@@ -230,7 +232,7 @@ def main():
         slist[fn] = 0
 
         img2 = cv2.imread(path+'/'+fn, 1)
-        hlist[fn] = hist(img, img2)
+        hlist[fn] = hist(img, img2, fn)
         flist[fn] += hlist[fn]
         tlist[fn] = tmatch(img, img2)
         flist[fn] += tlist[fn]
