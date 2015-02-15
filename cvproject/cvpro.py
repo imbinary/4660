@@ -118,7 +118,7 @@ def tmatch(intemp, infile):
         # find corners of matched image
         top_left = max_loc
         bottom_right = (top_left[0] + w, top_left[1] + h)
-        print "template: {} {} {} {}".format(top_left, bottom_right, str(1-math.sqrt((top_left[0]-100)**2 + (top_left[1]-100)**2)/660.0), str(1-math.sqrt((bottom_right[0]-300)**2 + (bottom_right[1]-300)**2)/453.0))
+        print "temp: {} {} {} {}".format(top_left, bottom_right, str(1-math.sqrt((top_left[0]-100)**2 + (top_left[1]-100)**2)/660.0), str(1-math.sqrt((bottom_right[0]-300)**2 + (bottom_right[1]-300)**2)/453.0))
     return ((1-math.sqrt((top_left[0]-100)**2 + (top_left[1]-100)**2)/660.0) + (1-math.sqrt((bottom_right[0]-300)**2 + (bottom_right[1]-300)**2)/453.0))/2.0
 
 
