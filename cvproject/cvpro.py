@@ -134,7 +134,7 @@ def sift(iin, iout):
             good.append([m])
     print str(len(matches)) + " " + str(len(good))+" " + str(float(len(good))/len(kp1))
 
-    return float(len(good))/len(kp1)
+    return float(len(good))/float(len(kp1))
 
 
 # custom test
@@ -154,9 +154,9 @@ def cust(iin, iout):
     for m, n in matches:
         if m.distance < 0.75*n.distance:
             good.append([m])
-    print str(len(kp1)) + " " + str(len(good))+" " + str(float(len(good))/len(kp1))
+    print str(len(kp1)) + " " + str(len(good))+" " + str(float(len(good))/float(len(kp1)))
 
-    return float(len(good))/len(kp1)
+    return float(len(good))/float(len(kp1))
 
 
 def main():
