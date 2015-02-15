@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import os
 import collections
 import random
+import math
 
 def drawMatches(img1, kp1, img2, kp2, matches):
     """
@@ -117,8 +118,8 @@ def tmatch(intemp, infile):
         # find corners of matched image
         top_left = max_loc
         bottom_right = (top_left[0] + w, top_left[1] + h)
-        print "{} {}".format(top_left, bottom_right)
-    return 0
+        print "{} {} {} {}".format(top_left, bottom_right, str(1-math.sqrt((top_left[0]-100)**2 + (top_left[1]-100)**2)/660.0), str(1-math.sqrt((bottom_right[0]-300)**2 + (bottom_right[1]-300)**2)/453.0))
+    return ((1-math.sqrt((top_left[0]-100)**2 + (top_left[1]-100)**2)/660.0) + (1-math.sqrt((bottom_right[0]-300)**2 + (bottom_right[1]-300)**2)/453.0))/2.0
 
 
 # sift
