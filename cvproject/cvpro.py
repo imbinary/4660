@@ -168,12 +168,12 @@ def cust(iin, iout):
 
     return float(len(good))/float(len(kp1))
 
-def top4(flist, path):
+def top4(flist, path, tst):
     # sort for best match
     od = collections.OrderedDict(sorted(flist.items(), key=lambda t: t[1], reverse=True))
 
     # initialize the results figure
-    fig = plt.figure("Results")
+    fig = plt.figure("Results" + tst)
 
     # loop over the results
     for (i, (k, v)) in enumerate(od.items()):
@@ -206,18 +206,35 @@ def main():
 
     # collection for data
     flist = {}
+    tlist = {}
+    hlist = {}
+    clist = {}
+    slist = {}
 
     # init to 0 then do 4 tests
     for fn in dirs:
         flist[fn] = 0
+        tlist[fn] = 0
+        hlist[fn] = 0
+        clist[fn] = 0
+        slist[fn] = 0
+
         img2 = cv2.imread(path+'/'+fn, 1)
-        flist[fn] += hist(img, img2)
-        flist[fn] += tmatch(img, img2)
-        flist[fn] += sift(img, img2)
-        flist[fn] += cust(img, img2)
+        hlist[fn] = hist(img, img2)
+        flist[fn] += hlist[fn]
+        tlist[fn] = tmatch(img, img2)
+        flist[fn] += tlist[fn]
+        slist[fn] = sift(img, img2)
+        flist[fn] += slist[fn]
+        clist[fn] = cust(img, img2)
+        flist[fn] += clist[fn]
         print fn + " " + str(flist[fn]) + "\n"
 
-    top4(flist, path)
+    top4(hlist, path, " hist")
+    top4(tlist, path, " temp")
+    top4(slist, path, " sift")
+    top4(clist, path, " cust")
+    top4(flist, path, " total")
     # show the query image
     fig = plt.figure("Query")
     ax = fig.add_subplot(1, 1, 1)
