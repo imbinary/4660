@@ -140,7 +140,7 @@ def sift(iin, iout):
     # Apply ratio test
     good = []
     for m, n in matches:
-        if m.distance < 0.99*n.distance:
+        if m.distance < 0.75*n.distance:
             good.append([m])
     print "sift: " + str(len(matches)) + " " + str(len(good))+" " + str(float(len(good))/len(kp1))
 
@@ -151,22 +151,24 @@ def sift(iin, iout):
 def cust(iin, iout):
     img1 = cv2.cvtColor(iin, cv2.COLOR_BGR2GRAY)
     img2 = cv2.cvtColor(iout, cv2.COLOR_BGR2GRAY)
-    orb = cv2.ORB()
-    # find the keypoints with ORB
-    # compute the descriptors with ORB
-    kp1, des1 = orb.detectAndCompute(img1, None)
-    kp2, des2 = orb.detectAndCompute(img2, None)
 
-    bf = cv2.BFMatcher()
-    matches = bf.knnMatch(des1, des2, k=2)
-    # Apply ratio test
-    good = []
-    for m, n in matches:
-        if m.distance < 0.99*n.distance:
-            good.append([m])
-    print "cust: " + str(len(kp1)) + " " + str(len(good))+" " + str(float(len(good))/float(len(kp1)))
+    ret1, thresh1 = cv2.threshold(img1, 127, 255, 0)
+    contours1, hierarchy1 = cv2.findContours(thresh1, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-    return float(len(good))/float(len(kp1))
+    ret2, thresh2 = cv2.threshold(img2, 127, 255, 0)
+    contours2, hierarchy2 = cv2.findContours(thresh2, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+    for (cnt) in (contours1):
+                # print "Looking through contours"
+                approx1 = cv2.approxPolyDP(cnt, 0.01*cv2.arcLength(cnt, True), True)
+                # approx2 = cv2.approxPolyDP(cnt2, 0.01*cv2.arcLength(cnt, True), True)
+                # print len(approx)
+                print str(len(approx1)) # + " " + str(len(approx2))
+
+
+    print str(len(contours1)) + " " + str(len(contours2))
+
+    return 0
 
 def top4(flist, path, tst):
     # sort for best match
@@ -244,7 +246,7 @@ def main():
     plt.axis("off")
 
     # show them
-    plt.show()
+    # plt.show()
 
 
 if __name__ == "__main__":
