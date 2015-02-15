@@ -117,15 +117,24 @@ def tmatch(intemp, infile):
 
 # sift
 def sift(iin, iout):
-    gray = cv2.cvtColor(iin, cv2.COLOR_BGR2GRAY)
+    img1 = cv2.cvtColor(iin, cv2.COLOR_BGR2GRAY)
+    img2 = cv2.cvtColor(iout, cv2.COLOR_BGR2GRAY)
 
     sifted = cv2.SIFT()
-    kp, des = sifted.detectAndCompute(gray, None)
+    kp1, des1 = sifted.detectAndCompute(img1, None)
+    kp2, des2 = sifted.detectAndCompute(img2, None)
 
-    img = cv2.drawKeypoints(gray, kp, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+    bf = cv2.BFMatcher()
+    matches = bf.knnMatch(des1, des2, k=2)
 
-    # kp, des = sift.compute(gray, kp)
-    return 0
+    # Apply ratio test
+    good = []
+    for m, n in matches:
+        if m.distance < 0.75*n.distance:
+            good.append([m])
+    print str(len(matches)) + " " + str(len(good))
+
+    return len(good)/len(kp1)
 
 
 # custom test
@@ -169,7 +178,7 @@ def main():
         img2 = cv2.imread(path+'/'+fn, 1)
         flist[fn] += hist(img, img2)
         flist[fn] += tmatch(img2, img)
-        # flist[fn] += sift(img, img2)
+        flist[fn] += sift(img, img2)
         flist[fn] += cust(img, img2)
         print fn + " " + str(flist[fn])
 
