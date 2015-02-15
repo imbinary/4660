@@ -84,21 +84,13 @@ def hist(iin, iout, name):
     img1 = cv2.cvtColor(iin, cv2.COLOR_BGR2HSV)
     img2 = cv2.cvtColor(iout, cv2.COLOR_BGR2HSV)
 
-    plt.figure(name)
-
     hist1 = cv2.calcHist([img1], [0, 1, 2], None, [256, 256, 256], [0, 256, 0, 256, 0, 256])
     hist1 = cv2.normalize(hist1, hist1).flatten()
-    plt.plot(hist1, color = 'b')
-    plt.xlim([0,256])
-
 
     hist2 = cv2.calcHist([img2], [0, 1, 2], None, [256, 256, 256], [0, 256, 0, 256, 0, 256])
     hist2 = cv2.normalize(hist2, hist2).flatten()
-    plt.plot(hist2, color = 'g')
-    plt.xlim([0, 256])
 
-    plt.show()
-
+    # use average of two methods
     ret = float(cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_CORREL) + (1-cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_BHATTACHARYYA)))/float(2)
     print "hist: " + str(ret)
 
