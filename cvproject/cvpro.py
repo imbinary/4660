@@ -88,10 +88,11 @@ def hist(iin, iout):
 
     hist2 = cv2.calcHist([img2], [0, 1, 2], None, [256, 256, 256], [0, 256, 0, 256, 0, 256])
     hist2 = cv2.normalize(hist2, hist2).flatten()
-    print "hist: " + str(cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_CORREL)) + " " + str(1-cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_BHATTACHARYYA))
+    ret = float(cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_CORREL) + (1-cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_BHATTACHARYYA)))/float(2)
+    print "hist: " + str(ret)
 
     # print 1 - cv2.compareHist(hist1, hist2, 3)
-    return float(cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_CORREL) + (1-cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_BHATTACHARYYA)))/float(2)
+    return ret
 
 
 # template matching
@@ -120,8 +121,9 @@ def tmatch(intemp, infile):
         # find corners of matched image
         top_left = max_loc
         bottom_right = (top_left[0] + w, top_left[1] + h)
-        print "temp: {} {} {} {}".format(top_left, bottom_right, str(1-math.sqrt((top_left[0]-100)**2 + (top_left[1]-100)**2)/660.0), str(1-math.sqrt((bottom_right[0]-300)**2 + (bottom_right[1]-300)**2)/453.0))
-    return ((1-math.sqrt((top_left[0]-100)**2 + (top_left[1]-100)**2)/660.0) + (1-math.sqrt((bottom_right[0]-300)**2 + (bottom_right[1]-300)**2)/453.0))/2.0
+        ret = ((1-math.sqrt((top_left[0]-100)**2 + (top_left[1]-100)**2)/660.0) + (1-math.sqrt((bottom_right[0]-300)**2 + (bottom_right[1]-300)**2)/453.0))/2.0
+        print "temp: {}".format(ret)
+    return ret
 
 
 # sift
@@ -141,7 +143,7 @@ def sift(iin, iout):
     for m, n in matches:
         if m.distance < 0.75*n.distance:
             good.append([m])
-    print "sift: " + str(len(matches)) + " " + str(len(good))+" " + str(float(len(good))/len(kp1))
+    print "sift: " + str(float(len(good))/len(kp1))
 
     return float(len(good))/float(len(kp1))
 
@@ -149,19 +151,21 @@ def sift(iin, iout):
 # custom test
 def cust(iin, iout):
 
-    img1 = iin[200:250, 200:250]
-    img2 = iout[200:250, 200:250]
-    img1 = cv2.GaussianBlur(img1, (5, 5), 0)
-    img2 = cv2.GaussianBlur(img2, (5, 5), 0)
+    img1 = cv2.GaussianBlur(iin, (5, 5), 0)
+    img2 = cv2.GaussianBlur(iout, (5, 5), 0)
+    img1 = img1[160:480, 120:360]
+    img2 = img2[160:480, 120:360]
+
     hist1 = cv2.calcHist([img1], [0, 1, 2], None, [256, 256, 256], [0, 256, 0, 256, 0, 256])
     hist1 = cv2.normalize(hist1, hist1).flatten()
 
     hist2 = cv2.calcHist([img2], [0, 1, 2], None, [256, 256, 256], [0, 256, 0, 256, 0, 256])
     hist2 = cv2.normalize(hist2, hist2).flatten()
-    print "cust: " + str(cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_CORREL)) + " " + str(1-cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_BHATTACHARYYA))
+    ret = cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_CORREL)
 
+    print "cust: " + str(ret)
     # print 1 - cv2.compareHist(hist1, hist2, 3)
-    return float(cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_CORREL) + (1-cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_BHATTACHARYYA)))/float(2)
+    return ret
 
 
 def top4(flist, path, tst):
