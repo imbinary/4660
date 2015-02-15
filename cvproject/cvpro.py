@@ -82,15 +82,17 @@ def drawMatches(img1, kp1, img2, kp2, matches):
 # tests each give a score from 0-1
 # histogram test
 def hist(iin, iout):
-    hist1 = cv2.calcHist([iin], [0, 1, 2], None, [255, 255, 255], [0, 256, 0, 256, 0, 256])
+    img1 = cv2.cvtColor(iin, cv2.COLOR_BGR2HSV)
+    img2 = cv2.cvtColor(iout, cv2.COLOR_BGR2HSV)
+    hist1 = cv2.calcHist([img1], [0, 1, 2], None, [256, 256, 256], [0, 256, 0, 256, 0, 256])
     hist1 = cv2.normalize(hist1, hist1).flatten()
 
-    hist2 = cv2.calcHist([iout], [0, 1, 2], None, [255, 255, 255], [0, 256, 0, 256, 0, 256])
+    hist2 = cv2.calcHist([img2], [0, 1, 2], None, [256, 256, 256], [0, 256, 0, 256, 0, 256])
     hist2 = cv2.normalize(hist2, hist2).flatten()
-    print "hist: " + str(float(cv2.compareHist(hist1, hist2, 0) + (1-cv2.compareHist(hist1, hist2, 3)))/float(2))
-    # print cv2.compareHist(hist1, hist2, 0)
+    print "hist: " + str(cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_CORREL)) + " " + str(1-cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_BHATTACHARYYA))
+
     # print 1 - cv2.compareHist(hist1, hist2, 3)
-    return float(cv2.compareHist(hist1, hist2, 0) + (1-cv2.compareHist(hist1, hist2, 3)))/float(2)
+    return float(cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_CORREL) + (1-cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_BHATTACHARYYA)))/float(2)
 
 
 # template matching
@@ -166,6 +168,25 @@ def cust(iin, iout):
 
     return float(len(good))/float(len(kp1))
 
+def top4(flist, path):
+    # sort for best match
+    od = collections.OrderedDict(sorted(flist.items(), key=lambda t: t[1], reverse=True))
+
+    # initialize the results figure
+    fig = plt.figure("Results")
+
+    # loop over the results
+    for (i, (k, v)) in enumerate(od.items()):
+        # show the result
+        ax = fig.add_subplot(1, 4, i + 1)
+        ax.set_title("%s: %.2f" % (k, v))
+        img2 = cv2.imread(path+'/'+k, 1)
+        # need to convert to RGB for plt
+        plt.imshow(cv2.cvtColor(img2, cv2.COLOR_BGR2RGB))
+        plt.axis("off")
+        if i == 3:
+            break
+
 
 def main():
     ap = argparse.ArgumentParser()
@@ -196,27 +217,7 @@ def main():
         flist[fn] += cust(img, img2)
         print fn + " " + str(flist[fn]) + "\n"
 
-
-
-    # sort for best match
-    od = collections.OrderedDict(sorted(flist.items(), key=lambda t: t[1], reverse=True))
-
-
-
-    # initialize the results figure
-    fig = plt.figure("Results")
-
-    # loop over the results
-    for (i, (k, v)) in enumerate(od.items()):
-        # show the result
-        ax = fig.add_subplot(1, 4, i + 1)
-        ax.set_title("%s: %.2f" % (k, v))
-        img2 = cv2.imread(path+'/'+k, 1)
-        # need to convert to RGB for plt
-        plt.imshow(cv2.cvtColor(img2, cv2.COLOR_BGR2RGB))
-        plt.axis("off")
-        if i == 3:
-            break
+    top4(flist, path)
     # show the query image
     fig = plt.figure("Query")
     ax = fig.add_subplot(1, 1, 1)
