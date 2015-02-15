@@ -82,10 +82,10 @@ def drawMatches(img1, kp1, img2, kp2, matches):
 # tests each give a score from 0-1
 # histogram test
 def hist(iin, iout):
-    hist1 = cv2.calcHist([iin], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])
+    hist1 = cv2.calcHist([iin], [0, 1, 2], None, [255, 255, 255], [0, 256, 0, 256, 0, 256])
     hist1 = cv2.normalize(hist1, hist1).flatten()
 
-    hist2 = cv2.calcHist([iout], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])
+    hist2 = cv2.calcHist([iout], [0, 1, 2], None, [255, 255, 255], [0, 256, 0, 256, 0, 256])
     hist2 = cv2.normalize(hist2, hist2).flatten()
     print "hist: " + str(float(cv2.compareHist(hist1, hist2, 0) + (1-cv2.compareHist(hist1, hist2, 3)))/float(2))
     # print cv2.compareHist(hist1, hist2, 0)
