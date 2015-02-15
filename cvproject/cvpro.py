@@ -177,12 +177,12 @@ def top4(flist, path, tst):
     od = collections.OrderedDict(sorted(flist.items(), key=lambda t: t[1], reverse=True))
 
     # initialize the results figure
-    fig = plt.figure("Results" + tst)
-
+    fig = plt.figure("Results"+tst)
+    fig.suptitle(tst, fontsize = 20)
     # loop over the results
     for (i, (k, v)) in enumerate(od.items()):
         # show the result
-        ax = fig.add_subplot(1, 4, i + 1)
+        ax = fig.add_subplot(2, 2, i + 1)
         ax.set_title("%s: %.2f" % (k, v))
         img2 = cv2.imread(path+'/'+k, 1)
         # need to convert to RGB for plt
@@ -234,10 +234,10 @@ def main():
         flist[fn] += clist[fn]
         print fn + " " + str(flist[fn]) + "\n"
 
-    top4(hlist, path, " hist")
-    top4(tlist, path, " temp")
-    top4(slist, path, " sift")
-    top4(clist, path, " cust")
+    top4(hlist, path, "histogram")
+    top4(tlist, path, "template matching")
+    top4(slist, path, "SIFT")
+    top4(clist, path, "custom")
     # top4(flist, path, " total")
     # show the query image
     fig = plt.figure("Query")
