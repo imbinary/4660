@@ -154,17 +154,16 @@ def sift(iin, iout):
 # custom test
 def cust(iin, iout):
 
-    # img1 = cv2.GaussianBlur(iin, (5, 5))
-    img1 = iin
-    img2 = cv2.GaussianBlur(iout, (5, 5), 1)
-    img1 = img1[160:480, 120:360]
-    img2 = img2[160:480, 120:360]
+    img1 = cv2.cvtColor(iin, cv2.COLOR_BGR2GRAY)
+    img2 = cv2.cvtColor(iout, cv2.COLOR_BGR2GRAY)
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    img1 = clahe.apply(img1)
+    img2 = clahe.apply(img2)
+    hist1 = cv2.calcHist([img1], [0], None, [256], [0, 256])
 
-    hist1 = cv2.calcHist([img1], [0, 1, 2], None, [256, 256, 256], [0, 256, 0, 256, 0, 256])
-    hist1 = cv2.normalize(hist1, hist1).flatten()
 
-    hist2 = cv2.calcHist([img2], [0, 1, 2], None, [256, 256, 256], [0, 256, 0, 256, 0, 256])
-    hist2 = cv2.normalize(hist2, hist2).flatten()
+    hist2 = cv2.calcHist([img2], [0], None, [256], [0, 256])
+
     ret = cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_CORREL)
 
     print "cust: " + str(ret)
