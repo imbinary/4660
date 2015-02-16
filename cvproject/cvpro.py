@@ -208,6 +208,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("-i", "--image", required=True, help="Path to the query image")
     ap.add_argument("-p", "--path", required=True, help="Path to the directory of images")
+    ap.add_argument("-a", "--automate", required=False, help="run tests for all pictures in path")
     args = vars(ap.parse_args())
 
     image = args["image"]
