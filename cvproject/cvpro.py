@@ -172,13 +172,15 @@ def cust(iin, iout):
     return ret
 
 
-def top4(flist, path, tst):
+def top4(flist, path, tst, orig):
     # sort for best match
     od = collections.OrderedDict(sorted(flist.items(), key=lambda t: t[1], reverse=True))
-
+    (setn, picn) = divmod(int(str(orig).split('.')[0].split("ukbench")[1]), 4)
     # initialize the results figure
     fig = plt.figure("Results"+tst)
-    fig.suptitle(tst, fontsize = 20)
+
+    score = 0
+    tscore = 0
     # loop over the results
     for (i, (k, v)) in enumerate(od.items()):
         # show the result
@@ -188,8 +190,18 @@ def top4(flist, path, tst):
         # need to convert to RGB for plt
         plt.imshow(cv2.cvtColor(img2, cv2.COLOR_BGR2RGB))
         plt.axis("off")
+        (sett, pict) = divmod(int(str(k).split('.')[0].split("ukbench")[1]), 4)
+        if setn == sett and picn == pict:
+            score += 1
+        elif setn == sett:
+            tscore += 1
+
         if i == 3:
             break
+    if tscore > 1:
+        score +=tscore
+    fig.suptitle(tst + " Score(" + str(score) + ")", fontsize = 20)
+    return score
 
 
 def main():
@@ -234,11 +246,11 @@ def main():
         flist[fn] += clist[fn]
         print fn + " " + str(flist[fn]) + "\n"
 
-    top4(hlist, path, "histogram")
-    top4(tlist, path, "template matching")
-    top4(slist, path, "SIFT")
-    top4(clist, path, "custom")
-    # top4(flist, path, " total")
+    top4(hlist, path, "histogram", image)
+    top4(tlist, path, "template matching", image)
+    top4(slist, path, "SIFT", image)
+    top4(clist, path, "custom", image)
+    # top4(flist, path, " total", image)
     # show the query image
     fig = plt.figure("Query")
     ax = fig.add_subplot(1, 1, 1)
