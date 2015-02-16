@@ -153,15 +153,18 @@ def sift(iin, iout):
 
 # custom test
 def cust(iin, iout):
-
-    img1 = cv2.cvtColor(iin, cv2.COLOR_BGR2GRAY)
-    img2 = cv2.cvtColor(iout, cv2.COLOR_BGR2GRAY)
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-    img1 = clahe.apply(img1)
+    img1 = cv2.cvtColor(iin, cv2.COLOR_BGR2HSV)
+    img2 = cv2.cvtColor(iout, cv2.COLOR_BGR2HSV)
+    img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+    img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
+    clahe = cv2.createCLAHE(clipLimit=1.0, tileGridSize=(16, 16))
+    # img1 = clahe.apply(img1)
     img2 = clahe.apply(img2)
+    # img1 = cv2.equalizeHist(img1)
+    # img2 = cv2.equalizeHist(img2)
+    cv2.imshow('clahe', img2)
+    cv2.waitKey(10)
     hist1 = cv2.calcHist([img1], [0], None, [256], [0, 256])
-
-
     hist2 = cv2.calcHist([img2], [0], None, [256], [0, 256])
 
     ret = cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_CORREL)
