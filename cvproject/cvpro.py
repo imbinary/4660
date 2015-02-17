@@ -59,8 +59,15 @@ def sift(img1, img2, show=True):
     kp1, des1 = sifted.detectAndCompute(img1, None)
     kp2, des2 = sifted.detectAndCompute(img2, None)
 
-    bf = cv2.BFMatcher()
-    matches = bf.knnMatch(des1, des2, k=2)
+    FLANN_INDEX_KDTREE = 0
+    index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
+    search_params = dict(checks=50)
+
+    flann = cv2.FlannBasedMatcher(index_params, search_params)
+
+    matches = flann.knnMatch(des1, des2, k=2)
+    # bf = cv2.BFMatcher()
+    # matches = bf.knnMatch(des1, des2, k=2)
 
     # Apply ratio test
     good = []
@@ -81,8 +88,9 @@ def cust(img1, img2, show=True):
     img2 = clahe.apply(img2)
     # img1 = cv2.equalizeHist(img1)
     # img2 = cv2.equalizeHist(img2)
-    # cv2.imshow('clahe', img2)
-    # cv2.waitKey(10)
+    res = np.hstack((img1, img2))
+    cv2.imshow('clahe', res)
+    cv2.waitKey(10)
     hist1 = cv2.calcHist([img1], [0], None, [256], [0, 256])
     hist2 = cv2.calcHist([img2], [0], None, [256], [0, 256])
 
