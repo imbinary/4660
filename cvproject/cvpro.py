@@ -197,13 +197,14 @@ def main():
     if aarg.automate:
         ha = sa = ta = ca = 0
         for i, (f) in enumerate(dirs):
-            print i+1
+            print i+1,
             (h, t, s, c) = runtest(f, path, dirs, False)
             ha += h
             sa += s
             ta += t
             ca += c
-        print "{} {} {} {}".format(ha/24, ta/24, sa/24, ca/24)
+        print
+        print "{0:.2f} {1:.2f} {2:.2f} {3:.2f}".format(ha/24.0, ta/24.0, sa/24.0, ca/24.0)
     else:
         runtest(image, path, dirs, True)
 
