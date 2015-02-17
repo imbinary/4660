@@ -212,7 +212,7 @@ def main():
             if output and ofile:
                 ofile.write("{0},{1},{2},{3},{4}\n".format(f, h, t, s, c))
         print
-        print "{0:.2f} {1:.2f} {2:.2f} {3:.2f}".format(ha/len(dirs), ta/len(dirs), sa/len(dirs), ca/len(dirs))
+        print "{0:.2f} {1:.2f} {2:.2f} {3:.2f}".format(ha/float(len(dirs)), ta/float(len(dirs)), sa/float(len(dirs)), ca/float(len(dirs)))
         if ofile:
             ofile.close()
 
