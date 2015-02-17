@@ -30,41 +30,30 @@ def hist(iin, iout, name, show=True):
 
 
 # template matching
-def tmatch(intemp, infile, show=True):
+def tmatch(intemp, img2, show=True):
 
-    # 4 methods for comparison in a list
-    methods = ['cv2.TM_CCOEFF']
-    template = cv2.cvtColor(intemp, cv2.COLOR_BGR2GRAY)
-    template = template[100:300, 100:300]
+    template = intemp[100:300, 100:300]
     # NOTE: its img[y: y + h, x: x + w] and *not* img[x: x + w, y: y + h]
     # cv2.imshow("cropped", template)
     # cv2.waitKey(0)
-    for meth in methods:
-        method = eval(meth)
 
-        t, wi, hi = infile.shape[::-1]
-        # make grayscale image for matching
-        img2 = cv2.cvtColor(infile, cv2.COLOR_BGR2GRAY)
+    w, h = template.shape[::-1]
 
-        w, h = template.shape[::-1]
+    # Apply template Matching
+    res = cv2.matchTemplate(img2, template, cv2.TM_CCOEFF)
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
-        # Apply template Matching
-        res = cv2.matchTemplate(img2, template, method)
-        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-
-        # find corners of matched image
-        top_left = max_loc
-        bottom_right = (top_left[0] + w, top_left[1] + h)
-        ret = ((1-math.sqrt((top_left[0]-100)**2 + (top_left[1]-100)**2)/660.0) + (1-math.sqrt((bottom_right[0]-300)**2 + (bottom_right[1]-300)**2)/453.0))/2.0
-        if show:
-            print "temp: {}".format(ret)
+    # find corners of matched image
+    top_left = max_loc
+    bottom_right = (top_left[0] + w, top_left[1] + h)
+    ret = ((1-math.sqrt((top_left[0]-100)**2 + (top_left[1]-100)**2)/660.0) + (1-math.sqrt((bottom_right[0]-300)**2 + (bottom_right[1]-300)**2)/453.0))/2.0
+    if show:
+        print "temp: {}".format(ret)
     return ret
 
 
 # sift
-def sift(iin, iout, show=True):
-    img1 = cv2.cvtColor(iin, cv2.COLOR_BGR2GRAY)
-    img2 = cv2.cvtColor(iout, cv2.COLOR_BGR2GRAY)
+def sift(img1, img2, show=True):
 
     sifted = cv2.SIFT()
     kp1, des1 = sifted.detectAndCompute(img1, None)
@@ -85,13 +74,10 @@ def sift(iin, iout, show=True):
 
 
 # custom test
-def cust(iin, iout, show=True):
-    img1 = cv2.cvtColor(iin, cv2.COLOR_BGR2HSV)
-    img2 = cv2.cvtColor(iout, cv2.COLOR_BGR2HSV)
-    img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
-    img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
+def cust(img1, img2, show=True):
+
     clahe = cv2.createCLAHE(clipLimit=1.0, tileGridSize=(4, 4))
-    # img1 = clahe.apply(img1)
+    img1 = clahe.apply(img1)
     img2 = clahe.apply(img2)
     # img1 = cv2.equalizeHist(img1)
     # img2 = cv2.equalizeHist(img2)
@@ -129,14 +115,14 @@ def top4(flist, path, tst, orig, show=True):
             plt.axis("off")
         (sett, pict) = divmod(int(str(k).split('.')[0].split("ukbench")[1]), 4)
         if setn == sett and picn == pict:
-            score += 1
+            score = 1
         elif setn == sett:
             tscore += 1
 
         if i == 3:
             break
-    if tscore > 1:
-        score +=tscore
+    if tscore > 1 and score == 1:
+        score += tscore
     if show:
         fig.suptitle(tst + " Score(" + str(score) + ")", fontsize = 20)
     return score
@@ -145,6 +131,7 @@ def top4(flist, path, tst, orig, show=True):
 def runtest(image, path, dirs, show):
     # Open a file
     img = cv2.imread(path+'/'+image, 1)
+    g1 = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     # path = "images"
 
     h = s = t = c = 0
@@ -165,11 +152,11 @@ def runtest(image, path, dirs, show):
         slist[fn] = 0
 
         img2 = cv2.imread(path+'/'+fn, 1)
-
+        g2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
         hlist[fn] = hist(img, img2, fn, show)
-        tlist[fn] = tmatch(img, img2, show)
-        slist[fn] = sift(img, img2, show)
-        clist[fn] = cust(img, img2, show)
+        tlist[fn] = tmatch(g1, g2, show)
+        slist[fn] = sift(g1, g2, show)
+        clist[fn] = cust(g1, g2, show)
 
         h = top4(hlist, path, "histogram", image, show)
         t = top4(tlist, path, "template matching", image, show)
