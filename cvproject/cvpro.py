@@ -186,16 +186,22 @@ def main():
     ap.add_argument("-i", "--image", required=True, help="Path to the query image")
     ap.add_argument("-p", "--path", required=True, help="Path to the directory of images")
     ap.add_argument("-a", "--automate", required=False, help="run tests for all pictures in path", action="store_true")
+    ap.add_argument("-o", "--outfile", required=False, help="file to write test stats")
 
     aarg = ap.parse_args()
     args = vars(aarg)
     image = args["image"]
     path = args["path"]
+    output = args["outfile"]
 
     dirs = os.listdir(path)
 
     if aarg.automate:
         ha = sa = ta = ca = 0
+        if output:
+            ofile = open(output+".csv", 'w')
+            if ofile:
+                ofile.write("Image,Histogram,Template Matching,SIFT,Custom\n")
         for i, (f) in enumerate(dirs):
             print i+1,
             (h, t, s, c) = runtest(f, path, dirs, False)
@@ -203,8 +209,14 @@ def main():
             sa += s
             ta += t
             ca += c
+            if output and ofile:
+                ofile.write("{0},{1},{2},{3},{4}\n".format(f, h, t, s, c))
         print
         print "{0:.2f} {1:.2f} {2:.2f} {3:.2f}".format(ha/24.0, ta/24.0, sa/24.0, ca/24.0)
+        if ofile:
+            ofile.close()
+
+
     else:
         runtest(image, path, dirs, True)
 
