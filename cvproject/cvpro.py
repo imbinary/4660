@@ -6,6 +6,7 @@ import os
 import collections
 import math
 import argparse
+import timeit
 
 
 # tests each give a score from 0-1
@@ -82,15 +83,19 @@ def sift(img1, img2, show=True):
 
 # custom test
 def cust(img1, img2, show=True):
-
-    clahe = cv2.createCLAHE(clipLimit=1.0, tileGridSize=(4, 4))
-    img1 = clahe.apply(img1)
-    img2 = clahe.apply(img2)
+    img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2LAB)
+    img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2LAB)
+    l1 = img1[:, :, 0]
+    l2 = img2[:, :, 0]
+    clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(8, 8))
+    img1 = clahe.apply(l1)
+    img2 = clahe.apply(l2)
     # img1 = cv2.equalizeHist(img1)
     # img2 = cv2.equalizeHist(img2)
-    res = np.hstack((img1, img2))
-    cv2.imshow('clahe', res)
-    cv2.waitKey(10)
+    # res = np.hstack((img1, img2))
+    # cv2.imshow('clahe', res)
+    # cv2.waitKey(2)
+
     hist1 = cv2.calcHist([img1], [0], None, [256], [0, 256])
     hist2 = cv2.calcHist([img2], [0], None, [256], [0, 256])
 
@@ -164,7 +169,7 @@ def runtest(image, path, dirs, show):
         hlist[fn] = hist(img, img2, fn, show)
         tlist[fn] = tmatch(g1, g2, show)
         slist[fn] = sift(g1, g2, show)
-        clist[fn] = cust(g1, g2, show)
+        clist[fn] = cust(img, img2, show)
 
         h = top4(hlist, path, "histogram", image, show)
         t = top4(tlist, path, "template matching", image, show)
@@ -190,7 +195,7 @@ def main():
     output = args["outfile"]
 
     dirs = os.listdir(path)
-
+    start = timeit.default_timer()
     if aarg.automate:
         ha = sa = ta = ca = 0
         if output:
@@ -227,6 +232,7 @@ def main():
         plt.axis("off")
         # show them
         plt.show()
+    print "testing took: " + str(timeit.default_timer()-start)
 
 
 if __name__ == "__main__":
