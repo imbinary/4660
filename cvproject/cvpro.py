@@ -95,8 +95,8 @@ def cust(iin, iout, show=True):
     img2 = clahe.apply(img2)
     # img1 = cv2.equalizeHist(img1)
     # img2 = cv2.equalizeHist(img2)
-    cv2.imshow('clahe', img2)
-    cv2.waitKey(10)
+    # cv2.imshow('clahe', img2)
+    # cv2.waitKey(10)
     hist1 = cv2.calcHist([img1], [0], None, [256], [0, 256])
     hist2 = cv2.calcHist([img2], [0], None, [256], [0, 256])
 
@@ -142,26 +142,16 @@ def top4(flist, path, tst, orig, show=True):
     return score
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("-i", "--image", required=True, help="Path to the query image")
-    ap.add_argument("-p", "--path", required=True, help="Path to the directory of images")
-    ap.add_argument("-a", "--automate", required=False, help="run tests for all pictures in path")
-    args = vars(ap.parse_args())
-
-    image = args["image"]
-    path = args["path"]
-    show = False
+def runtest(image, path, dirs, show):
     # Open a file
-    # path = "images"
-    dirs = os.listdir(path)
-    l = len(dirs)
-
-    print str(l) + " images, " + image + " was selected"
     img = cv2.imread(path+'/'+image, 1)
+    # path = "images"
 
+    h = s = t = c = 0
+    l = len(dirs)
+    if show:
+        print str(l) + " images, " + image + " was selected"
     # collection for data
-    flist = {}
     tlist = {}
     hlist = {}
     clist = {}
@@ -169,36 +159,63 @@ def main():
 
     # init to 0 then do 4 tests
     for fn in dirs:
-        flist[fn] = 0
         tlist[fn] = 0
         hlist[fn] = 0
         clist[fn] = 0
         slist[fn] = 0
 
         img2 = cv2.imread(path+'/'+fn, 1)
-        hlist[fn] = hist(img, img2, fn, show)
-        flist[fn] += hlist[fn]
-        tlist[fn] = tmatch(img, img2, show)
-        flist[fn] += tlist[fn]
-        slist[fn] = sift(img, img2, show)
-        flist[fn] += slist[fn]
-        clist[fn] = cust(img, img2, show)
-        flist[fn] += clist[fn]
-        if show:
-            print fn + " " + str(flist[fn]) + "\n"
 
-    top4(hlist, path, "histogram", image, show)
-    top4(tlist, path, "template matching", image, show)
-    top4(slist, path, "SIFT", image, show)
-    top4(clist, path, "custom", image, show)
-    # top4(flist, path, " total", image)
+        hlist[fn] = hist(img, img2, fn, show)
+        tlist[fn] = tmatch(img, img2, show)
+        slist[fn] = sift(img, img2, show)
+        clist[fn] = cust(img, img2, show)
+
+        h = top4(hlist, path, "histogram", image, show)
+        t = top4(tlist, path, "template matching", image, show)
+        s = top4(slist, path, "SIFT", image, show)
+        c = top4(clist, path, "custom", image, show)
+
+        if show:
+            print fn + "\n"
+
+    return h, t, s, c
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-i", "--image", required=True, help="Path to the query image")
+    ap.add_argument("-p", "--path", required=True, help="Path to the directory of images")
+    ap.add_argument("-a", "--automate", required=False, help="run tests for all pictures in path", action="store_true")
+
+    aarg = ap.parse_args()
+    args = vars(aarg)
+    image = args["image"]
+    path = args["path"]
+
+    dirs = os.listdir(path)
+
+    if aarg.automate:
+        ha = sa = ta = ca = 0
+        for i, (f) in enumerate(dirs):
+            print i+1
+            (h, t, s, c) = runtest(f, path, dirs, False)
+            ha += h
+            sa += s
+            ta += t
+            ca += c
+        print "{} {} {} {}".format(ha/24, ta/24, sa/24, ca/24)
+    else:
+        runtest(image, path, dirs, True)
+
+
+
     # show the query image
-    if show:
+    if not aarg.automate:
         fig = plt.figure("Query")
         ax = fig.add_subplot(1, 1, 1)
         ax.set_title("%s" % image)
         # need to convert to RGB for plt
-        ax.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+        ax.imshow(cv2.cvtColor(cv2.imread(path+'/'+image, 1), cv2.COLOR_BGR2RGB))
         plt.axis("off")
         # show them
         plt.show()
