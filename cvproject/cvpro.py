@@ -11,13 +11,16 @@ import timeit
 
 # tests each give a score from 0-1
 # histogram test
-def hist(iin, iout, name, show=True):
+def hist(iin, iout, show=True):
+    # convert to HSV
     img1 = cv2.cvtColor(iin, cv2.COLOR_BGR2HSV)
     img2 = cv2.cvtColor(iout, cv2.COLOR_BGR2HSV)
 
+    # calc histogram on query image and normalise
     hist1 = cv2.calcHist([img1], [0, 1], None, [180, 256], [0, 180, 0, 256])
     hist1 = cv2.normalize(hist1, hist1).flatten()
 
+    # calc histogram on test image and normalise
     hist2 = cv2.calcHist([img2], [0, 1], None, [180, 256], [0, 180, 0, 256])
     hist2 = cv2.normalize(hist2, hist2).flatten()
 
@@ -26,17 +29,14 @@ def hist(iin, iout, name, show=True):
     if show:
         print "hist: " + str(ret)
 
-    # print 1 - cv2.compareHist(hist1, hist2, 3)
     return ret
 
 
 # template matching
 def tmatch(intemp, img2, show=True):
-
+    # grab a portion of query image to use as template
     template = intemp[100:300, 100:300]
     # NOTE: its img[y: y + h, x: x + w] and *not* img[x: x + w, y: y + h]
-    # cv2.imshow("cropped", template)
-    # cv2.waitKey(0)
 
     w, h = template.shape[::-1]
 
@@ -65,10 +65,7 @@ def sift(img1, img2, show=True):
     search_params = dict(checks=50)
 
     flann = cv2.FlannBasedMatcher(index_params, search_params)
-
     matches = flann.knnMatch(des1, des2, k=2)
-    # bf = cv2.BFMatcher()
-    # matches = bf.knnMatch(des1, des2, k=2)
 
     # Apply ratio test
     good = []
@@ -77,25 +74,26 @@ def sift(img1, img2, show=True):
             good.append([m])
     if show:
         print "sift: " + str(float(len(good))/len(kp1))
-
+    # use a ratio of good matches to total keypairs as a score
     return float(len(good))/float(len(kp1))
 
 
 # custom test
 def cust(img1, img2, show=True):
+    # convert to LAB colorspace
     img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2LAB)
     img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2LAB)
+
+    # grab just the L
     l1 = img1[:, :, 0]
     l2 = img2[:, :, 0]
+
+    # do CLAHE on each L
     clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(8, 8))
     img1 = clahe.apply(l1)
     img2 = clahe.apply(l2)
-    # img1 = cv2.equalizeHist(img1)
-    # img2 = cv2.equalizeHist(img2)
-    # res = np.hstack((img1, img2))
-    # cv2.imshow('clahe', res)
-    # cv2.waitKey(2)
 
+    # calc histograms of each then compare
     hist1 = cv2.calcHist([img1], [0], None, [256], [0, 256])
     hist2 = cv2.calcHist([img2], [0], None, [256], [0, 256])
 
@@ -103,7 +101,6 @@ def cust(img1, img2, show=True):
 
     if show:
         print "cust: " + str(ret)
-    # print 1 - cv2.compareHist(hist1, hist2, 3)
     return ret
 
 
@@ -116,6 +113,7 @@ def top4(flist, path, tst, orig, show=True):
 
     score = 0
     tscore = 0
+
     # loop over the results
     for (i, (k, v)) in enumerate(od.items()):
         img2 = cv2.imread(path+'/'+k, 1)
@@ -141,6 +139,7 @@ def top4(flist, path, tst, orig, show=True):
     return score
 
 
+# run each of the 4 tests for image in path
 def runtest(image, path, dirs, show):
     # Open a file
     img = cv2.imread(path+'/'+image, 1)
@@ -166,7 +165,7 @@ def runtest(image, path, dirs, show):
 
         img2 = cv2.imread(path+'/'+fn, 1)
         g2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
-        hlist[fn] = hist(img, img2, fn, show)
+        hlist[fn] = hist(img, img2, show)
         tlist[fn] = tmatch(g1, g2, show)
         slist[fn] = sift(g1, g2, show)
         clist[fn] = cust(img, img2, show)
