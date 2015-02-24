@@ -1,15 +1,14 @@
-__author__ = 'William Orem, Carolus Andrews'
+__author__ = 'William Orem'
 import cv2
+import numpy as np
 import matplotlib.pyplot as plt
 import os
 import collections
 import math
 import argparse
 import timeit
-import fnmatch
 
 g = {}
-
 # tests each give a score from 0-1
 # histogram test
 def hist(iin, iout, show=True):
@@ -55,15 +54,18 @@ def tmatch(intemp, img2, show=True):
 
 
 # sift
-def sift(img1, n1, img2, n2, show=True):
+def sift(img1, name1, img2, name2, show=True):
+
     global g
+    # store sift results in G to speed up future tests
     sifted = cv2.SIFT()
-    if n1 not in g:
-        g[n1] = sifted.detectAndCompute(img1, None)
-    kp1, des1 = g[n1]
-    if n2 not in g:
-        g[n2] = sifted.detectAndCompute(img2, None)
-    kp2, des2 = g[n2]
+    if name1 not in g:
+        g[name1] = sifted.detectAndCompute(img1, None)
+    if name2 not in g:
+        g[name2] = sifted.detectAndCompute(img2, None)
+
+    kp1, des1 = g[name1]
+    kp2, des2 = g[name2]
 
     FLANN_INDEX_KDTREE = 0
     index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
@@ -140,7 +142,7 @@ def top4(flist, path, tst, orig, show=True):
     if tscore > 1 and score == 1:
         score += tscore
     if show:
-        fig.suptitle(tst + " Score(" + str(score) + ")", fontsize = 20)
+        fig.suptitle(tst + " Score( " + str(score) + " )", fontsize=20)
     return score
 
 
@@ -172,16 +174,17 @@ def runtest(image, path, dirs, show):
         g2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
         hlist[fn] = hist(img, img2, show)
         tlist[fn] = tmatch(g1, g2, show)
-        slist[fn] = sift(g1, image, g2, fn, show)
+        slist[fn] = sift(g1, image, g2, fn,  show)
         clist[fn] = cust(img, img2, show)
-
-        h = top4(hlist, path, "histogram", image, show)
-        t = top4(tlist, path, "templatematching", image, show)
-        s = top4(slist, path, "SIFT", image, show)
-        c = top4(clist, path, "custom", image, show)
-
         if show:
             print fn + "\n"
+
+    h = top4(hlist, path, "histogram", image, show)
+    t = top4(tlist, path, "template matching", image, show)
+    s = top4(slist, path, "SIFT", image, show)
+    c = top4(clist, path, "custom", image, show)
+
+
 
     return h, t, s, c
 
@@ -199,7 +202,6 @@ def main():
     output = args["outfile"]
 
     dirs = os.listdir(path)
-    dirs = fnmatch.filter(dirs, 'ukbench*.jpg')
     start = timeit.default_timer()
     if aarg.automate:
         ha = sa = ta = ca = 0
