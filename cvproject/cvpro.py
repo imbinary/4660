@@ -1,13 +1,14 @@
-__author__ = 'William Orem'
+__author__ = 'William Orem, Carolus Andrews'
 import cv2
-import numpy as np
 import matplotlib.pyplot as plt
 import os
 import collections
 import math
 import argparse
 import timeit
+import fnmatch
 
+g = {}
 
 # tests each give a score from 0-1
 # histogram test
@@ -54,11 +55,15 @@ def tmatch(intemp, img2, show=True):
 
 
 # sift
-def sift(img1, img2, show=True):
-
+def sift(img1, n1, img2, n2, show=True):
+    global g
     sifted = cv2.SIFT()
-    kp1, des1 = sifted.detectAndCompute(img1, None)
-    kp2, des2 = sifted.detectAndCompute(img2, None)
+    if n1 not in g:
+        g[n1] = sifted.detectAndCompute(img1, None)
+    kp1, des1 = g[n1]
+    if n2 not in g:
+        g[n2] = sifted.detectAndCompute(img2, None)
+    kp2, des2 = g[n2]
 
     FLANN_INDEX_KDTREE = 0
     index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
@@ -167,11 +172,11 @@ def runtest(image, path, dirs, show):
         g2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
         hlist[fn] = hist(img, img2, show)
         tlist[fn] = tmatch(g1, g2, show)
-        slist[fn] = sift(g1, g2, show)
+        slist[fn] = sift(g1, image, g2, fn, show)
         clist[fn] = cust(img, img2, show)
 
         h = top4(hlist, path, "histogram", image, show)
-        t = top4(tlist, path, "template matching", image, show)
+        t = top4(tlist, path, "templatematching", image, show)
         s = top4(slist, path, "SIFT", image, show)
         c = top4(clist, path, "custom", image, show)
 
@@ -194,6 +199,7 @@ def main():
     output = args["outfile"]
 
     dirs = os.listdir(path)
+    dirs = fnmatch.filter(dirs, 'ukbench*.jpg')
     start = timeit.default_timer()
     if aarg.automate:
         ha = sa = ta = ca = 0
