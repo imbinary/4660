@@ -7,6 +7,7 @@ import collections
 import math
 import argparse
 import timeit
+import fnmatch
 
 g = {}
 # tests each give a score from 0-1
@@ -202,6 +203,7 @@ def main():
     output = args["outfile"]
 
     dirs = os.listdir(path)
+    dirs = fnmatch.filter(dirs, 'ukbench*.jpg')
     start = timeit.default_timer()
     if aarg.automate:
         ha = sa = ta = ca = 0
