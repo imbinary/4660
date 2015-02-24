@@ -1,6 +1,5 @@
-__author__ = 'William Orem'
+__author__ = 'William Orem, Carolus Andrews'
 import cv2
-import numpy as np
 import matplotlib.pyplot as plt
 import os
 import collections
