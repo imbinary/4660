@@ -1,4 +1,25 @@
 __author__ = 'William Orem, Carolus Andrews'
+
+'''
+This program has 2 modes of operation single image and automated testing.
+
+for single image 2 command line parameters are required -i <query image> -p <path to image folder>
+note: query image is filename not full path!
+
+when the program is run in this mode the specified image is used to find matches in the path. The console will show the
+individual test results for each image higher numbers are better. The four best matches are selected for each test type
+and displayed along with the score of each test and individual image results.
+
+The next mode is automated. the automated method requires one or two additional parameters.
+-i <query image not used> -p <path to images> -a -o <filename for output>
+
+When run in automated mode, the four methods are run using each file in the path as the query. If the -o option is used
+a .csv file is created showing the query image name and the scores for each test.
+The average results for each test method are displayed on the console.
+
+some code examples used from opencv.org and pyimagesearch.com
+
+'''
 import cv2
 import matplotlib.pyplot as plt
 import os
@@ -152,7 +173,6 @@ def runtest(image, path, dirs, show):
     img = cv2.imread(path+'/'+image, 1)
     g1 = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     # path = "images"
-
     h = s = t = c = 0
     l = len(dirs)
     if show:
