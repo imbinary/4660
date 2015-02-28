@@ -140,7 +140,7 @@ def top4(flist, path, tst, orig, show=True):
     fig = plt.figure("Results"+tst)
 
     score = 0
-    tscore = 0
+    # tscore = 0
 
     # loop over the results
     for (i, (k, v)) in enumerate(od.items()):
@@ -153,15 +153,11 @@ def top4(flist, path, tst, orig, show=True):
             plt.imshow(cv2.cvtColor(img2, cv2.COLOR_BGR2RGB))
             plt.axis("off")
         (sett, pict) = divmod(int(str(k).split('.')[0].split("ukbench")[1]), 4)
-        if setn == sett and picn == pict:
-            score = 1
-        elif setn == sett:
-            tscore += 1
+        if setn == sett:
+            score += 1
 
         if i == 3:
             break
-    if tscore > 1 and score == 1:
-        score += tscore
     if show:
         fig.suptitle(tst + " Score( " + str(score) + " )", fontsize=20)
     return score
@@ -205,7 +201,6 @@ def runtest(image, path, dirs, show):
     c = top4(clist, path, "custom", image, show)
 
 
-
     return h, t, s, c
 
 def main():
@@ -231,7 +226,7 @@ def main():
             if ofile:
                 ofile.write("Image,Histogram,Template Matching,SIFT,Custom\n")
         for i, (f) in enumerate(dirs):
-            print i+1,
+            print f,
             (h, t, s, c) = runtest(f, path, dirs, False)
             ha += h
             sa += s
@@ -239,8 +234,9 @@ def main():
             ca += c
             if output and ofile:
                 ofile.write("{0},{1},{2},{3},{4}\n".format(f, h, t, s, c))
+            print "-- Histogram: {0:.2f} - Template Matching: {1:.2f} - SIFT: {2:.2f} - Custom: {3:.2f}".format(h, t, s, c)
         print
-        print "{0:.2f} {1:.2f} {2:.2f} {3:.2f}".format(ha/float(len(dirs)), ta/float(len(dirs)), sa/float(len(dirs)), ca/float(len(dirs)))
+        print "Total Average Histogram: {0:.2f} Template Matching: {1:.2f} SIFT: {2:.2f} Custom: {3:.2f}".format(ha/float(len(dirs)), ta/float(len(dirs)), sa/float(len(dirs)), ca/float(len(dirs)))
         if ofile:
             ofile.close()
 
