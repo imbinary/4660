@@ -102,12 +102,11 @@ def sift(img1, name1, img2, name2, show=True):
 def cust(img1, name1, img2, name2, show=True):
     global ci
     clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(8, 8))
-    if name1 not in hi:
-
+    if name1 not in ci:
         # grab just the L and do clahe
         img1 = clahe.apply(cv2.cvtColor(img1, cv2.COLOR_BGR2LAB)[:, :, 0])
         ci[name1] = cv2.calcHist([img1], [0], None, [256], [0, 256])
-    if name2 not in hi:
+    if name2 not in ci:
         # grab just the L and do clahe
         img2 = clahe.apply(cv2.cvtColor(img2, cv2.COLOR_BGR2LAB)[:, :, 0])
         ci[name2] = cv2.calcHist([img2], [0], None, [256], [0, 256])
