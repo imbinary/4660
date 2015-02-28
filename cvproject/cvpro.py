@@ -30,23 +30,24 @@ import timeit
 import fnmatch
 
 g = {}
+hi = {}
+ci = {}
 # tests each give a score from 0-1
 # histogram test
-def hist(iin, iout, show=True):
-    # convert to HSV
-    img1 = cv2.cvtColor(iin, cv2.COLOR_BGR2HSV)
-    img2 = cv2.cvtColor(iout, cv2.COLOR_BGR2HSV)
+def hist(iin, name1, iout, name2, show=True):
+    # calc histogram on query image and test image and normalise them
 
-    # calc histogram on query image and normalise
-    hist1 = cv2.calcHist([img1], [0, 1], None, [180, 256], [0, 180, 0, 256])
-    hist1 = cv2.normalize(hist1, hist1).flatten()
+    if name1 not in hi:
+        hist1 = cv2.calcHist([cv2.cvtColor(iin, cv2.COLOR_BGR2HSV)], [0, 1], None, [180, 256], [0, 180, 0, 256])
+        hi[name1] = cv2.normalize(hist1, hist1).flatten()
+    if name2 not in hi:
+        hist2 = cv2.calcHist([cv2.cvtColor(iout, cv2.COLOR_BGR2HSV)], [0, 1], None, [180, 256], [0, 180, 0, 256])
+        hi[name2] = cv2.normalize(hist2, hist2).flatten()
 
-    # calc histogram on test image and normalise
-    hist2 = cv2.calcHist([img2], [0, 1], None, [180, 256], [0, 180, 0, 256])
-    hist2 = cv2.normalize(hist2, hist2).flatten()
+    hist1 = hi[name1]
+    hist2 = hi[name2]
 
-    # use average of two methods
-    ret = float(cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_CORREL) + (1-cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_BHATTACHARYYA)))/float(2)
+    ret = float(cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_CORREL))
     if show:
         print "hist: " + str(ret)
 
@@ -55,22 +56,13 @@ def hist(iin, iout, show=True):
 
 # template matching
 def tmatch(intemp, img2, show=True):
-    # grab a portion of query image to use as template
-    # template = intemp[100:300, 100:300]
-    # NOTE: its img[y: y + h, x: x + w] and *not* img[x: x + w, y: y + h]
-
-    w, h = intemp.shape[::-1]
-
     # Apply template Matching
-    res = cv2.matchTemplate(img2, intemp, cv2.TM_CCORR)
+    res = cv2.matchTemplate(img2, intemp, cv2.TM_CCORR_NORMED)
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
-    # find corners of matched image
-    top_left = max_loc
-    bottom_right = (top_left[0] + w, top_left[1] + h)
     ret = max_val
     if show:
-        print "temp: {} top:{} bot:{} max:{} min:{}".format(ret, top_left, bottom_right, max_val, min_val)
+        print "temp: {}".format(ret)
     return ret
 
 
@@ -107,23 +99,22 @@ def sift(img1, name1, img2, name2, show=True):
 
 
 # custom test
-def cust(img1, img2, show=True):
-    # convert to LAB colorspace
-    img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2LAB)
-    img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2LAB)
-
-    # grab just the L
-    l1 = img1[:, :, 0]
-    l2 = img2[:, :, 0]
-
-    # do CLAHE on each L
+def cust(img1, name1, img2, name2, show=True):
+    global ci
     clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(8, 8))
-    img1 = clahe.apply(l1)
-    img2 = clahe.apply(l2)
+    if name1 not in hi:
 
-    # calc histograms of each then compare
-    hist1 = cv2.calcHist([img1], [0], None, [256], [0, 256])
-    hist2 = cv2.calcHist([img2], [0], None, [256], [0, 256])
+        # grab just the L and do clahe
+        img1 = clahe.apply(cv2.cvtColor(img1, cv2.COLOR_BGR2LAB)[:, :, 0])
+        ci[name1] = cv2.calcHist([img1], [0], None, [256], [0, 256])
+    if name2 not in hi:
+        # grab just the L and do clahe
+        img2 = clahe.apply(cv2.cvtColor(img2, cv2.COLOR_BGR2LAB)[:, :, 0])
+        ci[name2] = cv2.calcHist([img2], [0], None, [256], [0, 256])
+
+    hist1 = ci[name1]
+    hist2 = ci[name2]
+
 
     ret = cv2.compareHist(hist1, hist2, cv2.cv.CV_COMP_CORREL)
 
@@ -169,7 +160,6 @@ def runtest(image, path, dirs, show):
     img = cv2.imread(path+'/'+image, 1)
     g1 = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     # path = "images"
-    h = s = t = c = 0
     l = len(dirs)
     if show:
         print str(l) + " images, " + image + " was selected"
@@ -188,10 +178,10 @@ def runtest(image, path, dirs, show):
 
         img2 = cv2.imread(path+'/'+fn, 1)
         g2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
-        hlist[fn] = hist(img, img2, show)
+        hlist[fn] = hist(img, image, img2, fn, show)
         tlist[fn] = tmatch(g1, g2, show)
         slist[fn] = sift(g1, image, g2, fn,  show)
-        clist[fn] = cust(img, img2, show)
+        clist[fn] = cust(img, image, img2, fn, show)
         if show:
             print fn + "\n"
 
