@@ -62,13 +62,13 @@ def tmatch(intemp, img2, show=True):
     w, h = intemp.shape[::-1]
 
     # Apply template Matching
-    res = cv2.matchTemplate(img2, intemp, cv2.TM_CCOEFF)
+    res = cv2.matchTemplate(img2, intemp, cv2.TM_CCORR)
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
     # find corners of matched image
     top_left = max_loc
     bottom_right = (top_left[0] + w, top_left[1] + h)
-    ret = ((1-math.sqrt((top_left[0]-100)**2 + (top_left[1]-100)**2)/660.0) + (1-math.sqrt((bottom_right[0]-300)**2 + (bottom_right[1]-300)**2)/453.0))/2.0
+    ret = max_val
     if show:
         print "temp: {} top:{} bot:{} max:{} min:{}".format(ret, top_left, bottom_right, max_val, min_val)
     return ret
