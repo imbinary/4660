@@ -3,6 +3,7 @@ import sys
 import motion
 import almath
 import vision_definitions
+import cv2 as cv
 from naoqi import ALProxy
 
 
@@ -43,13 +44,15 @@ def main():
     camProxy = ALProxy("ALVideoDevice", pip, pport)
     # -------------------------------------------
     # YOUR CODE HERE
-    resolution = vision_definitions.kQVGA
+    resolution = vision_definitions.kQQVGA
     colorSpace = vision_definitions.kYUVColorSpace
     fps = 30
 
     nameId = camProxy.subscribe("python_GVM", resolution, colorSpace, fps)
     print nameId
-
+    naoImage = camProxy.getImageRemote(nameId)
+    camProxy.releaseImage(nameId)
+    cv.imshow("nb", naoImage[6])
     motion_proxy.wakeUp()
     motion_proxy.moveInit()
     motion_proxy.moveTo(0.4, 0.332, 0)
