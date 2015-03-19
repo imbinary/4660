@@ -52,7 +52,7 @@ def main():
     print nameId
     naoImage = camProxy.getImageRemote(nameId)
     camProxy.releaseImage(nameId)
-    cv.imshow("nb", naoImage[6])
+    # cv.imshow("nb", naoImage[6])
     print naoImage[6]
     motion_proxy.wakeUp()
     motion_proxy.moveInit()
