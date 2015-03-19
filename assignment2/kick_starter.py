@@ -2,6 +2,7 @@ import sys
 
 import motion
 import almath
+import vision_definitions
 from naoqi import ALProxy
 
 
@@ -39,14 +40,21 @@ def main():
 
     motion_proxy = ALProxy("ALMotion", pip, pport)
     tts = ALProxy("ALTextToSpeech", pip, pport)
-
+    camProxy = ALProxy("ALVideoDevice", pip, pport)
     # -------------------------------------------
     # YOUR CODE HERE
+    resolution = vision_definitions.kQVGA
+    colorSpace = vision_definitions.kYUVColorSpace
+    fps = 30
+
+    nameId = camProxy.subscribe("python_GVM", resolution, colorSpace, fps)
+    print nameId
+
     motion_proxy.wakeUp()
     motion_proxy.moveInit()
     motion_proxy.moveTo(0.4, 0.332, 0)
     tts.say("Hello World!")
-    print motion_proxy.getSummary()
+    # print motion_proxy.getSummary()
     # YOUR CODE END
 
     kick(motion_proxy)
