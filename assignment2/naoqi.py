@@ -1,21 +1,63 @@
+import os
 import sys
+import ctypes
 import weakref
 import logging
+import inspect
+import qi
 
+def load_inaoqi_deps():
+    """ Helper to laod _inaoqi.so deps on linux """
+    deps = [
+            "libboost_python.so",
+            "libboost_system.so",
+            "libboost_chrono.so",
+            "libboost_program_options.so",
+            "libboost_thread.so",
+            "libboost_filesystem.so",
+            "libboost_regex.so",
+            "libboost_locale.so",
+            "libboost_signals.so",
+            "libqi.so",
+            "libqitype.so",
+            "libalerror.so",
+            "libalthread.so",
+            "libalvalue.so",
+            "libqimessaging.so",
+            "libalcommon.so",
+            "libalproxies.so",
+            "libalpythontools.so",
+            "libalbehavior.so",
+            "libqipython.so",
 
+    ]
+    this_dir = os.path.abspath(os.path.dirname(__file__))
+    for dep in deps:
+        full_path = os.path.join(this_dir, dep)
+        try:
+            ctypes.cdll.LoadLibrary(full_path)
+        except Exception:
+            pass
 
-try:
-    import _inaoqi
-except ImportError:
-    # quick hack to keep inaoqi.py happy
-    if sys.platform.startswith("win"):
-        print "Could not find _inaoqi, trying with _inaoqi_d"
-        import _inaoqi_d as _inaoqi
-    else:
-        raise
+if sys.platform.startswith("linux"):
+    load_inaoqi_deps()
 
-from assignment2 import allog, inaoqi
+import inaoqi
 
+import motion
+import allog
+
+def _getMethodParamCount(func):
+    r = inspect.getargspec(func)
+    #normal args
+    np = len(r[0])
+    #*args (none if non existent)
+    if r[1] is not None:
+        np = np + 1
+    #**kargs  (none if non existent)
+    if r[2] is not None:
+        np = np + 1
+    return np
 
 def autoBind(myClass, bindIfnoDocumented):
   """Show documentation for each
@@ -31,16 +73,16 @@ def autoBind(myClass, bindIfnoDocumented):
     if callable(function):
         if (type(function) == type(myClass.__init__)):
             if (bindIfnoDocumented or function.__doc__ != ""):
-                    if (thing[0] != "_"):  # private method
-                      if (function.__doc__):
+                if (thing[0] != "_"):  # private method
+                    if (function.__doc__):
                         myClass.functionName(thing, myClass.getName(), function.__doc__)
-                      else:
+                    else:
                         myClass.functionName(thing, myClass.getName(), "")
 
-                      for param in function.func_code.co_varnames:
+                    for param in function.func_code.co_varnames:
                         if (param != "self"):
-                          myClass.addParam(param)
-                      myClass._bindWithParam(myClass.getName(),thing,len(function.func_code.co_varnames)-1)
+                            myClass.addParam(param)
+                        myClass._bindWithParam(myClass.getName(),thing, _getMethodParamCount(function)-1)
 
 
 
@@ -130,6 +172,7 @@ class ALModule(inaoqi.module, ALDocable, NaoQiModule):
     inaoqi.module.__init__(self, param)
     ALDocable.__init__(self, False)
     NaoQiModule.__init__(self, param)
+    self.registerToBroker()
 
   def __del__(self):
     NaoQiModule.__del__(self)
@@ -160,7 +203,10 @@ class ALBehavior(inaoqi.behavior, NaoQiModule):
   _noNeedToBind.add("gotoAndPlayParent")
   _noNeedToBind.add("gotoAndStopParent")
 
-  def __init__(self, param, autoBind):
+  # but we want to bind setParameter to listen runtime changes
+  _noNeedToBind.remove("setParameter")
+
+  def __init__(self, param, autoBind, brokerRegister=True):
     inaoqi.behavior.__init__(self, param)
     NaoQiModule.__init__(self, param, logger=False)
     self.logger = logging.getLogger(param)
@@ -168,8 +214,12 @@ class ALBehavior(inaoqi.behavior, NaoQiModule):
     self.logger.addHandler(self.behaviorloghandler)
     self.logger.setLevel(logging.DEBUG)
     self.resource = False
-    self.BIND_PYTHON(self.getName(), "__onLoad__")
-    self.BIND_PYTHON(self.getName(), "__onUnload__")
+    self.BIND_PYTHON(self.getName(), "__onLoad__", 0)
+    self.BIND_PYTHON(self.getName(), "__onUnload__", 0)
+    #always set autobind to true for the compatibility layer.
+    #sometime BIND_PYTHON do not specify the number of arguments
+    #that cant be guessed because the class is not provided to the method.
+    autoBind = True
     if(autoBind):
       behName = self.getName()
       userMethList = set(dir(self)) - self._noNeedToBind
@@ -181,7 +231,18 @@ class ALBehavior(inaoqi.behavior, NaoQiModule):
             for param in function.func_code.co_varnames:
               if (param != "self"):
                 self.addParam(param)
-            self._bindWithParam(behName,methName,len(function.func_code.co_varnames)-1)
+            self._bindWithParam(behName, methName, _getMethodParamCount(function)-1)
+    if brokerRegister:
+      self.registerToBroker()
+
+  def setParameterInternal(self, a, b):
+      """ internal method used to call the good override for setParameter
+          which can be overrided in user class. legacy hell.
+      """
+      self.setParameter(a, b)
+
+  def session(self):
+    return inaoqi.behavior.session(self)
 
   def __del__(self):
     NaoQiModule.__del__(self)
@@ -200,6 +261,7 @@ class ALBehavior(inaoqi.behavior, NaoQiModule):
     inaoqi.behavior.setParameter(self, parameterName, newValue)
 
   def _safeCallOfUserMethod(self, functionName, functionArg):
+    import traceback
     try:
       if(functionName in dir(self)):
         func = getattr(self, functionName)
@@ -209,12 +271,15 @@ class ALBehavior(inaoqi.behavior, NaoQiModule):
           func()
       return True
     except BaseException, err:
-      self.logger.error(str(err))
-      try:
-        if("onError" in dir(self)):
-          self.onError(self.getName() + ':' +str(err))
-      except BaseException, err2:
-        self.logger.error(str(err2))
+      if("onError" in dir(self)):
+        try:
+          self.onError(self.getName() + ':' + str(err))
+        except BaseException, err2:
+          self.logger.error(traceback.format_exc())
+          self._reportError(self.behaviorId, self.__class__.__name__, traceback.format_exc())
+      else:
+        self.logger.error(traceback.format_exc())
+        self._reportError(self.behaviorId, self.__class__.__name__, traceback.format_exc())
     return False
 
   # Depreciate this!!! Same as self.logger.info(), but function is always "log"
@@ -318,9 +383,9 @@ class ALProxy(inaoqi.proxy,MethodMissingMixin):
         global ALLogger
         global ALSensors
         try:
-                ALMemory = inaoqi.getMemoryProxy()
+            ALMemory = inaoqi.getMemoryProxy()
         except:
-                ALMemory = ALProxy("ALMemory")
+            ALMemory = ALProxy("ALMemory")
         try:
             ALFrameManager = ALProxy("ALFrameManager")
         except:
@@ -347,4 +412,3 @@ def createModule(name):
     global moduleList
     str = "moduleList.append("+ "module(\"" + name + "\"))"
     exec(str)
-
