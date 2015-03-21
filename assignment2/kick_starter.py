@@ -84,6 +84,9 @@ def showCam(camProxy):
 def centerOnBall(motionProxy, camProxy, camera):
     im1 = getImage(camProxy, camera)
     loc = findBall(im1)
+    tol = 10
+    if camera == 1:
+        tol = 5
 
     print loc[0]-X
 
@@ -98,7 +101,7 @@ def centerOnBall(motionProxy, camProxy, camera):
         print "no ball"
         return -1
 
-    if abs(loc[0]-X) < 10:
+    if abs(loc[0]-X) < tol:
         print "Heading is on"
         return 1
 
@@ -158,7 +161,7 @@ def main():
         else:
             # turn
             seeball = 1
-    motionProxy.moveTo(0, -.1, 0)
+    motionProxy.moveTo(0, -.2, 0)
     motionProxy.moveTo(.1, 0, 0)
     postureProxy.goToPosture("StandInit", 0.5)
     print "kicking now"
