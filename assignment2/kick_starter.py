@@ -19,7 +19,7 @@ def shift_weight(motion_proxy):
     times = [[2.0], [2.0]]  # seconds
     paths = [[[0.0, 0.0, 0.0, 0.0, 0.45553, 0.0]],
              [[0.0, -0.1, -0.02, 0.0, 0.04, 0.0]]]
-    motion_proxy.positionInterpolations(effectors, motion.FRAME_TORSO, paths, axis_masks, times, False)
+    motion_proxy.positionInterpolations(effectors, motion.FRAME_ROBOT, paths, axis_masks, times, False)
 
     path = [0.0, 0.00, 0.04, 0.0, 0.0, 0.0]
     motion_proxy.positionInterpolation("LLeg", motion.FRAME_TORSO, path, almath.AXIS_MASK_ALL, 2.0, False)
@@ -121,11 +121,12 @@ def main():
     motionProxy.wakeUp()
     #postureProxy.goToPosture("StandInit", 0.5)
     motionProxy.moveInit()
-    motionProxy.moveTo(0, 0, -.2)
-
+    #kick(motionProxy)
+    #motionProxy.moveTo(1, 0, -.2)
+    motionProxy.rest()
 
     # YOUR CODE END
 
-    kick(motionProxy)
+    #kick(motionProxy)
 if __name__ == "__main__":
     main()
