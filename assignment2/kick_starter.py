@@ -40,10 +40,10 @@ def getImage(camProxy, camera):
     resolution = vision_definitions.kQQVGA
     colorSpace = vision_definitions.kRGBColorSpace
     fps = 30
-    nameId = camProxy.subscribe("python_GVM", camera, resolution, colorSpace, fps)
+    nameId = camProxy.subscribeCamera("python_GVM", camera, resolution, colorSpace, fps)
     naoImage = camProxy.getImageRemote(nameId)
     camProxy.releaseImage(nameId)
-
+    camProxy.unsubscribe(nameId)
     im = np.array(Image.frombytes("RGB", (naoImage[0], naoImage[1]), naoImage[6]))
 
     return im
