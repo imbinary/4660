@@ -150,11 +150,11 @@ def main():
                 camera = 1
         elif val == 1:
             # head on move forward
-            dist = 0.3
+            dist = 0.4
             if camera == 1:
                 dist = 0.15
             seeball = 1
-            motionProxy.moveTo(.3, 0, 0)
+            motionProxy.moveTo(dist, 0, 0)
         else:
             # turn
             seeball = 1
