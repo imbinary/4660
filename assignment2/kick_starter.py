@@ -35,6 +35,21 @@ def kick(motion_proxy):
     except Exception as e:
         sys.exit(e)
 
+def getImage(camProxy, camera):
+    # get an image
+    resolution = vision_definitions.kQQVGA
+    colorSpace = vision_definitions.kRGBColorSpace
+    fps = 30
+    nameId = camProxy.subscribe("python_GVM", camera, resolution, colorSpace, fps)
+    naoImage = camProxy.getImageRemote(nameId)
+    camProxy.releaseImage(nameId)
+
+    im = np.array(Image.frombytes("RGB", (naoImage[0], naoImage[1]), naoImage[6]))
+
+    return im
+
+
+
 
 def main():
     pip = "127.0.0.1"
@@ -48,23 +63,13 @@ def main():
     camProxy = ALProxy("ALVideoDevice", pip, pport)
     postureProxy = ALProxy("ALRobotPosture", pip, pport)
 
-    # get an image
-    resolution = vision_definitions.kQQVGA
-    colorSpace = vision_definitions.kRGBColorSpace
-    fps = 30
-    nameId = camProxy.subscribe("python_GVM", resolution, colorSpace, fps)
-    naoImage = camProxy.getImageRemote(nameId)
-    camProxy.releaseImage(nameId)
-    # camProxy.unsubscribe()
-
-    im = Image.frombytes("RGB", (naoImage[0], naoImage[1]), naoImage[6])
-    cv2.imshow("nb", np.array(im))
-    cv2.waitKey(430)
+    im = getImage(camProxy, 0)
+    cv2.imshow(im)
+    cv2.waitKey(500)
 
     motionProxy.wakeUp()
     postureProxy.goToPosture("StandInit", 0.5)
     motionProxy.moveInit()
-    # motionProxy.setStiffnesses("Body", 1.0)
     motionProxy.moveTo(0.4, 0.332, 0)
 
     # print motion_proxy.getSummary()
