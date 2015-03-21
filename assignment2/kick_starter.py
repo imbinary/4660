@@ -1,10 +1,10 @@
 import sys
+import Image
+import numpy as np
 
-import motion
-import almath
-import vision_definitions
-import cv2 as cv
-from naoqi import ALProxy
+import cv2
+
+from naoqi import ALProxy, motion, almath, vision_definitions
 
 
 def shift_weight(motion_proxy):
@@ -39,29 +39,36 @@ def main():
     pip = "127.0.0.1"
     pport = 9559
 
-    motion_proxy = ALProxy("ALMotion", pip, pport)
-    tts = ALProxy("ALTextToSpeech", pip, pport)
-    camProxy = ALProxy("ALVideoDevice", pip, pport)
+    motionProxy = ALProxy("ALMotion", pip, pport)
+
     # -------------------------------------------
     # YOUR CODE HERE
-    resolution = vision_definitions.kQQVGA
-    colorSpace = vision_definitions.kYUVColorSpace
-    fps = 30
+    # setup additional proxies
+    camProxy = ALProxy("ALVideoDevice", pip, pport)
+    postureProxy = ALProxy("ALRobotPosture", pip, pport)
 
+    # get an image
+    resolution = vision_definitions.kQQVGA
+    colorSpace = vision_definitions.kRGBColorSpace
+    fps = 30
     nameId = camProxy.subscribe("python_GVM", resolution, colorSpace, fps)
-    print nameId
     naoImage = camProxy.getImageRemote(nameId)
     camProxy.releaseImage(nameId)
-    # cv.imshow("nb", naoImage[6])
-    print naoImage[6]
-    motion_proxy.wakeUp()
-    motion_proxy.moveInit()
-    motion_proxy.moveTo(0.4, 0.332, 0)
-    tts.say("Hello World!")
+    # camProxy.unsubscribe()
+
+    im = Image.frombytes("RGB", (naoImage[0], naoImage[1]), naoImage[6])
+    cv2.imshow("nb", np.array(im))
+    cv2.waitKey(430)
+
+    motionProxy.wakeUp()
+    postureProxy.goToPosture("StandInit", 0.5)
+    motionProxy.moveInit()
+    # motionProxy.setStiffnesses("Body", 1.0)
+    motionProxy.moveTo(0.4, 0.332, 0)
+
     # print motion_proxy.getSummary()
     # YOUR CODE END
 
-    kick(motion_proxy)
-
+    kick(motionProxy)
 if __name__ == "__main__":
     main()
