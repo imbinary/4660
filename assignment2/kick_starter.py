@@ -84,21 +84,31 @@ def showCam(camProxy):
 def centerOnBall(motionProxy, camProxy, camera):
     im1 = getImage(camProxy, camera)
     loc = findBall(im1)
+    print loc[0]-X
+
+    if abs(loc[0]-X)>50:
+        turn = .3
+    elif abs(loc[0]-X)>30:
+        turn = .2
+    else:
+        turn = .1
+
     if loc[0] == -1:
         print "no ball"
         return -1
 
     if abs(loc[0]-X) < 2:
+        print "Heading is on"
         return 1
 
     if loc[0]-X < 0:
         # turn left
         print "turning left"
-        #motionProxy.moveTo(0, 0, -.2)
+        motionProxy.moveTo(0, 0, turn)
     else:
         # turn right
         print "turning right"
-        #motionProxy.moveTo(0, 0, .2)
+        motionProxy.moveTo(0, 0, -turn)
     time.sleep(2)
     return 0
 
@@ -117,15 +127,16 @@ def main():
     # initialize motion
     motionProxy.wakeUp()
     postureProxy.goToPosture("StandInit", 0.5)
-    motionProxy.moveInit()
-    for x in range(20):
+    #motionProxy.moveInit()
+    for x in range(4):
         showCam(camProxy)
         centerOnBall(motionProxy, camProxy, 0)
-    #motionProxy.moveTo(1, 0, -.2)
-    motionProxy.rest()
+    motionProxy.moveToward(0, 0, -.2, [["Frequency", 0.5]])
+    #motionProxy.rest()
 
     # YOUR CODE END
+    print "kicking now"
+    kick(motionProxy)
 
-    #kick(motionProxy)
 if __name__ == "__main__":
     main()
