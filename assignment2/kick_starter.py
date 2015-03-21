@@ -81,21 +81,12 @@ def showCam(camProxy):
     cv2.imshow("bottom", im)
     cv2.waitKey(2)
 
-def centerOnBall(motionProxy, camProxy, camera):
-    im1 = getImage(camProxy, camera)
-    loc = findBall(im1)
+def centerOnBall(loc, camera):
     tol = 10
     if camera == 1:
         tol = 5
 
     print loc[0]-X
-
-    if abs(loc[0]-X)>50:
-        turn = .3
-    elif abs(loc[0]-X)>30:
-        turn = .2
-    else:
-        turn = .1
 
     if loc[0] == -1:
         print "no ball"
@@ -105,6 +96,14 @@ def centerOnBall(motionProxy, camProxy, camera):
         print "Heading is on"
         return 1
 
+    return 0
+def turnrobot(loc, motionProxy):
+    if abs(loc[0]-X) > 50:
+        turn = .3
+    elif abs(loc[0]-X) > 30:
+        turn = .2
+    else:
+        turn = .1
     if loc[0]-X < 0:
         # turn left
         print "turning left"
@@ -113,8 +112,7 @@ def centerOnBall(motionProxy, camProxy, camera):
         # turn right
         print "turning right"
         motionProxy.moveTo(0, 0, -turn)
-    time.sleep(2)
-    return 0
+
 
 def main():
     pip = "127.0.0.1"
@@ -137,8 +135,10 @@ def main():
 
     # logic
     while True:
-        showCam(camProxy)
-        val = centerOnBall(motionProxy, camProxy, camera)
+        # showCam(camProxy)
+        im1 = getImage(camProxy, camera)
+        loc = findBall(im1)
+        val = centerOnBall(loc, camProxy, camera)
         if val == -1:
             # no ball
             if camera == 1 and seeball == 1:
@@ -160,9 +160,11 @@ def main():
             motionProxy.moveTo(dist, 0, 0)
         else:
             # turn
+            turnrobot(loc, motionProxy)
             seeball = 1
+
     motionProxy.moveTo(0, -.2, 0)
-    motionProxy.moveTo(.1, 0, 0)
+    motionProxy.moveTo(.14, 0, 0)
     postureProxy.goToPosture("StandInit", 0.5)
     print "kicking now"
     # YOUR CODE END
