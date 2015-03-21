@@ -143,19 +143,23 @@ def main():
                 break
             if camera == 1 and seeball == 0:
                 # wander no ball in lower or upper
+                motionProxy.moveTo(0, 0, .6)
                 camera = 0
             else:
                 # look in lower
                 camera = 1
         elif val == 1:
             # head on move forward
+            dist = 0.3
+            if camera == 1:
+                dist = 0.15
             seeball = 1
             motionProxy.moveTo(.3, 0, 0)
         else:
             # turn
             seeball = 1
 
-
+    postureProxy.goToPosture("StandInit", 0.5)
     # YOUR CODE END
     print "kicking now"
     kick(motionProxy)
