@@ -160,6 +160,7 @@ def main():
             seeball = 1
 
     postureProxy.goToPosture("StandInit", 0.5)
+    motionProxy.moveTo(.1, 0, 0)
     # YOUR CODE END
     print "kicking now"
     kick(motionProxy)
