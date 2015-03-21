@@ -113,6 +113,13 @@ def turnrobot(loc, motionProxy):
         print "turning right"
         motionProxy.moveTo(0, 0, -turn)
 
+def moveforward(loc, camera, motionProxy):
+    dist = 0.6
+    print loc[1]
+    if camera == 1:
+        dist = 0.15
+
+    motionProxy.moveTo(dist, 0, 0)
 
 def main():
     pip = "127.0.0.1"
@@ -153,11 +160,8 @@ def main():
                 camera = 1
         elif val == 1:
             # head on move forward
-            dist = 0.6
-            if camera == 1:
-                dist = 0.15
+            moveforward(loc, camera, motionProxy)
             seeball = 1
-            motionProxy.moveTo(dist, 0, 0)
         else:
             # turn
             turnrobot(loc, motionProxy)
