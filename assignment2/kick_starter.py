@@ -118,10 +118,10 @@ def moveforward(loc, camera, motionProxy):
     print loc[1]
     if camera == 1:
         dist = 0.3
-        if loc[0] > 80:
+        if loc[0] > 70:
             dist = .15
         if loc[1] > 110:
-            dist = .75
+            dist = .075
 
     motionProxy.moveTo(dist, 0, 0)
 
