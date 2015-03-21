@@ -131,7 +131,7 @@ def main():
     for x in range(4):
         showCam(camProxy)
         centerOnBall(motionProxy, camProxy, 0)
-    motionProxy.moveToward(0, 0, -.2, [["Frequency", 0.5]])
+    #motionProxy.moveToward(0, 0, -.2, [["Frequency", 0.5]])
     #motionProxy.rest()
 
     # YOUR CODE END
