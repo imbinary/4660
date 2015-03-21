@@ -4,7 +4,8 @@ import numpy as np
 
 import cv2
 
-from naoqi import ALProxy, motion, almath, vision_definitions
+from naoqi import ALProxy
+import motion, almath, vision_definitions
 
 
 def shift_weight(motion_proxy):
