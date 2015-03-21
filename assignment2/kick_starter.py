@@ -97,7 +97,7 @@ def centerOnBall(motionProxy, camProxy, camera):
         print "no ball"
         return -1
 
-    if abs(loc[0]-X) < 2:
+    if abs(loc[0]-X) < 3:
         print "Heading is on"
         return 1
 
