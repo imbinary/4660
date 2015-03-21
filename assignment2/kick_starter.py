@@ -84,6 +84,7 @@ def showCam(camProxy):
 def centerOnBall(motionProxy, camProxy, camera):
     im1 = getImage(camProxy, camera)
     loc = findBall(im1)
+
     print loc[0]-X
 
     if abs(loc[0]-X)>50:
@@ -115,7 +116,7 @@ def centerOnBall(motionProxy, camProxy, camera):
 def main():
     pip = "127.0.0.1"
     pport = 9559
-
+    camera = 0
     motionProxy = ALProxy("ALMotion", pip, pport)
     camProxy = ALProxy("ALVideoDevice", pip, pport)
     postureProxy = ALProxy("ALRobotPosture", pip, pport)
@@ -131,7 +132,9 @@ def main():
     for y in range(10):
         for x in range(5):
             showCam(camProxy)
-            centerOnBall(motionProxy, camProxy, 0)
+            val = centerOnBall(motionProxy, camProxy, camera)
+            if val == -1:
+                camera = 1
         motionProxy.moveTo(.3, 0, 0)
     #motionProxy.moveToward(0, 0, -.2, [["Frequency", 0.5]])
     #motionProxy.rest()
