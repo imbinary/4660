@@ -64,13 +64,13 @@ def main():
     postureProxy = ALProxy("ALRobotPosture", pip, pport)
 
     im = getImage(camProxy, 0)
-    cv2.imshow(im)
+    cv2.imshow("bottom", im)
     cv2.waitKey(500)
 
     motionProxy.wakeUp()
     postureProxy.goToPosture("StandInit", 0.5)
     motionProxy.moveInit()
-    motionProxy.moveTo(0.4, 0.332, 0)
+    motionProxy.moveTo(0.6, 0.332, 0)
 
     # print motion_proxy.getSummary()
     # YOUR CODE END
