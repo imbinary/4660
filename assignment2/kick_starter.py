@@ -128,10 +128,11 @@ def main():
     motionProxy.wakeUp()
     postureProxy.goToPosture("StandInit", 0.5)
     #motionProxy.moveInit()
-    for x in range(10):
-        showCam(camProxy)
-        centerOnBall(motionProxy, camProxy, 0)
-        motionProxy.moveTo(.2, 0, 0)
+    for y in range(5):
+        for x in range(10):
+            showCam(camProxy)
+            centerOnBall(motionProxy, camProxy, 0)
+        motionProxy.moveTo(.3, 0, 0)
     #motionProxy.moveToward(0, 0, -.2, [["Frequency", 0.5]])
     #motionProxy.rest()
 
