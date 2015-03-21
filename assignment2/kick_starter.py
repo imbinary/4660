@@ -158,11 +158,11 @@ def main():
         else:
             # turn
             seeball = 1
-
+    motionProxy.moveTo(.1, -.1, 0)
     postureProxy.goToPosture("StandInit", 0.5)
-    motionProxy.moveTo(.1, 0, 0)
-    # YOUR CODE END
     print "kicking now"
+    # YOUR CODE END
+
     kick(motionProxy)
 
 if __name__ == "__main__":
