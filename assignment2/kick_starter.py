@@ -117,6 +117,9 @@ def main():
     pip = "127.0.0.1"
     pport = 9559
     camera = 0
+    seeball = 0
+    headon = 0
+
     motionProxy = ALProxy("ALMotion", pip, pport)
     camProxy = ALProxy("ALVideoDevice", pip, pport)
     postureProxy = ALProxy("ALRobotPosture", pip, pport)
@@ -128,16 +131,30 @@ def main():
     # initialize motion
     motionProxy.wakeUp()
     postureProxy.goToPosture("StandInit", 0.5)
-    #motionProxy.moveInit()
-    for y in range(10):
-        for x in range(5):
-            showCam(camProxy)
-            val = centerOnBall(motionProxy, camProxy, camera)
-            if val == -1:
+
+    # logic
+    while True:
+        showCam(camProxy)
+        val = centerOnBall(motionProxy, camProxy, camera)
+        if val == -1:
+            # no ball
+            if camera == 1 and seeball == 1:
+                #kick we had ball on lower and now its gone
+                break
+            if camera == 1 and seeball == 0:
+                # wander no ball in lower or upper
+                camera = 0
+            else:
+                # look in lower
                 camera = 1
-        motionProxy.moveTo(.3, 0, 0)
-    #motionProxy.moveToward(0, 0, -.2, [["Frequency", 0.5]])
-    #motionProxy.rest()
+        elif val == 1:
+            # head on move forward
+            seeball = 1
+            motionProxy.moveTo(.3, 0, 0)
+        else:
+            # turn
+            seeball = 1
+
 
     # YOUR CODE END
     print "kicking now"
