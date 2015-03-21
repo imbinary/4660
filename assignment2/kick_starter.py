@@ -70,8 +70,9 @@ def main():
     motionProxy.wakeUp()
     postureProxy.goToPosture("StandInit", 0.5)
     motionProxy.moveInit()
-    motionProxy.moveTo(0.6, 0.332, 0)
+    motionProxy.moveTo(1, 0.332, 0)
 
+    postureProxy.goToPosture("StandInit", 0.5)
     # print motion_proxy.getSummary()
     # YOUR CODE END
 
