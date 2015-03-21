@@ -97,7 +97,7 @@ def centerOnBall(motionProxy, camProxy, camera):
         print "no ball"
         return -1
 
-    if abs(loc[0]-X) < 3:
+    if abs(loc[0]-X) < 10:
         print "Heading is on"
         return 1
 
@@ -128,8 +128,8 @@ def main():
     motionProxy.wakeUp()
     postureProxy.goToPosture("StandInit", 0.5)
     #motionProxy.moveInit()
-    for y in range(5):
-        for x in range(10):
+    for y in range(10):
+        for x in range(5):
             showCam(camProxy)
             centerOnBall(motionProxy, camProxy, 0)
         motionProxy.moveTo(.3, 0, 0)
