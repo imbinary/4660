@@ -45,7 +45,7 @@ def getImage(camProxy, camera):
     camProxy.releaseImage(nameId)
     camProxy.unsubscribe(nameId)
     im = np.array(Image.frombytes("RGB", (naoImage[0], naoImage[1]), naoImage[6]))
-
+    im = cv2.cvtColor(im, cv2.COLOR_RGB2BGR)
     return im
 
 
