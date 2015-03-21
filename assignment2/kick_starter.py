@@ -150,7 +150,7 @@ def main():
                 camera = 1
         elif val == 1:
             # head on move forward
-            dist = 0.4
+            dist = 0.6
             if camera == 1:
                 dist = 0.15
             seeball = 1
@@ -158,7 +158,8 @@ def main():
         else:
             # turn
             seeball = 1
-    motionProxy.moveTo(.1, -.1, 0)
+    motionProxy.moveTo(0, -.1, 0)
+    motionProxy.moveTo(.1, 0, 0)
     postureProxy.goToPosture("StandInit", 0.5)
     print "kicking now"
     # YOUR CODE END
