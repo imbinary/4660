@@ -93,9 +93,9 @@ def centerOnBall(motionProxy, camProxy, camera):
 
     if abs(loc[0]-X) < 2:
         return
-    #motionProxy.wakeUp()
+    motionProxy.wakeUp()
     # postureProxy.goToPosture("StandInit", 0.5)
-    #motionProxy.moveInit()
+    motionProxy.moveInit()
     # motionProxy.moveTo(0, 0, -.2)
     if loc[0]-X < 0:
         # turn left
@@ -116,16 +116,23 @@ def main():
     # YOUR CODE HERE
 
     # setup additional proxies
+    camProxy = ALProxy("ALVideoDevice", pip, pport)
+    postureProxy = ALProxy("ALRobotPosture", pip, pport)
 
     # initialize motion
-    motionProxy.wakeUp()
+    #motionProxy.wakeUp()
     #postureProxy.goToPosture("StandInit", 0.5)
-    motionProxy.moveInit()
-    motionProxy.moveTo(0, 0, -.2)
+    #motionProxy.moveInit()
 
-
+    # look for ball
+    while 1:
+        centerOnBall(motionProxy, camProxy, 0)
+        showCam(camProxy)
+    centerOnBall(motionProxy, camProxy, 0)
+    #postureProxy.goToPosture("StandInit", 0.5)
+    # print motion_proxy.getSummary()
     # YOUR CODE END
 
-    kick(motionProxy)
+    #kick(motionProxy)
 if __name__ == "__main__":
     main()
