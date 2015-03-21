@@ -138,7 +138,7 @@ def main():
         # showCam(camProxy)
         im1 = getImage(camProxy, camera)
         loc = findBall(im1)
-        val = centerOnBall(loc, camProxy, camera)
+        val = centerOnBall(loc, camera)
         if val == -1:
             # no ball
             if camera == 1 and seeball == 1:
