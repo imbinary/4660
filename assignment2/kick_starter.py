@@ -1,9 +1,8 @@
 import sys
 from PIL import Image
 import numpy as np
-
 import cv2
-
+import time
 from naoqi import ALProxy
 import motion
 import almath
@@ -77,26 +76,21 @@ def showCam(camProxy):
         print "no ball"
     else:
         cv2.circle(im1, loc, 5, (0, 0, 200))
-        print loc
-        print loc[0]-X
 
     im = np.concatenate((im1, im2), axis=0)
     cv2.imshow("bottom", im)
-    cv2.waitKey(1)
+    cv2.waitKey(2)
 
 def centerOnBall(motionProxy, camProxy, camera):
     im1 = getImage(camProxy, camera)
     loc = findBall(im1)
     if loc[0] == -1:
         print "no ball"
-        return
+        return -1
 
     if abs(loc[0]-X) < 2:
-        return
-    #motionProxy.wakeUp()
-    # postureProxy.goToPosture("StandInit", 0.5)
-    #motionProxy.moveInit()
-    # motionProxy.moveTo(0, 0, -.2)
+        return 1
+
     if loc[0]-X < 0:
         # turn left
         print "turning left"
@@ -105,13 +99,16 @@ def centerOnBall(motionProxy, camProxy, camera):
         # turn right
         print "turning right"
         #motionProxy.moveTo(0, 0, .2)
+    time.sleep(2)
+    return 0
 
 def main():
     pip = "127.0.0.1"
     pport = 9559
 
     motionProxy = ALProxy("ALMotion", pip, pport)
-
+    camProxy = ALProxy("ALVideoDevice", pip, pport)
+    postureProxy = ALProxy("ALRobotPosture", pip, pport)
     # -------------------------------------------
     # YOUR CODE HERE
 
@@ -119,9 +116,11 @@ def main():
 
     # initialize motion
     motionProxy.wakeUp()
-    #postureProxy.goToPosture("StandInit", 0.5)
+    postureProxy.goToPosture("StandInit", 0.5)
     motionProxy.moveInit()
-    #kick(motionProxy)
+    for x in range(20):
+        showCam(camProxy)
+        centerOnBall(motionProxy, camProxy, 0)
     #motionProxy.moveTo(1, 0, -.2)
     motionProxy.rest()
 
