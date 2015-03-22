@@ -200,6 +200,6 @@ def main():
     # YOUR CODE END
 
     kick()
-    posture_proxy.goToPosture("StandInit", 0.5)
+    postureProxy.goToPosture("StandInit", 0.5)
 if __name__ == "__main__":
     main()
