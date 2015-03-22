@@ -132,26 +132,16 @@ def centerOnBall(loc, camera):
 
     return 0
 def turnrobot(loc, motionProxy):
-    if abs(loc[0]-X) > 50:
-        turn = .3
-    elif abs(loc[0]-X) > 30:
-        turn = .2
-    else:
-        turn = .1
-    if loc[0]-X < 0:
-        # turn left
-        print "turning left"
-        motionProxy.moveTo(0, 0, turn)
-    else:
-        # turn right
-        print "turning right"
-        motionProxy.moveTo(0, 0, -turn)
+    turn = .4*(X-loc[0]/float(X))
+    print "turning"
+    motionProxy.moveTo(0, 0, turn)
+
 
 def moveforward(loc, camera, motionProxy):
     dist = 0.6
     print loc[1]
     if camera == 1:
-        dist = 0.3 * ((120.0-loc[1])/120.0)
+        dist = 0.45 * ((120.0-loc[1])/120.0)
 
     motionProxy.moveTo(dist, 0, 0)
 
