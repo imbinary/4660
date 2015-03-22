@@ -14,7 +14,8 @@ Y = 120/2
 BALL = 0
 GOAL = 1
 GOALIE = 2
-
+TOP = 0
+BOTTOM = 1
 
 def shift_weight(use_sensor_values):
     axis_mask = almath.AXIS_MASK_ALL   # full control
@@ -78,15 +79,12 @@ def kick():
     motionProxy.positionInterpolations(effector, frame, path_list, axis_mask, times)
 
 
-def getImage(camProxy, camera):
+def getImage(camera):
     # get an image
-    resolution = vision_definitions.kQQVGA
-    colorSpace = vision_definitions.kRGBColorSpace
-    fps = 30
-    nameId = camProxy.subscribeCamera("python_GVM", camera, resolution, colorSpace, fps)
-    naoImage = camProxy.getImageRemote(nameId)
-    camProxy.releaseImage(nameId)
-    camProxy.unsubscribe(nameId)
+    if camera == BOTTOM:
+        naoImage = camProxy.getImageRemote(lowercam)
+    else:
+        naoImage = camProxy.getImageRemote(uppercam)
     im = np.array(Image.frombytes("RGB", (naoImage[0], naoImage[1]), naoImage[6]))
     im = cv2.cvtColor(im, cv2.COLOR_RGB2BGR)
 
@@ -132,7 +130,7 @@ def showCam(camProxy):
 
 def centerOnBall(loc, camera):
     tol = 10
-    if camera == 1:
+    if camera == BOTTOM:
         tol = 6
 
     if loc[0] == -1:
@@ -154,7 +152,7 @@ def turnrobot(loc, motionProxy):
 
 def moveforward(loc, camera, motionProxy):
     dist = 0.6
-    if camera == 1:
+    if camera == BOTTOM:
         dist = 0.45 * ((120.0-loc[1])/120.0)
     print "moving " + str(dist)
     motionProxy.moveTo(dist, 0, 0)
@@ -170,41 +168,49 @@ def main():
     postureProxy = ALProxy("ALRobotPosture", pip, pport)
     # -------------------------------------------
     # YOUR CODE HERE
-    camera = 0
+    camera = TOP
     seeball = 0
     lowball = 0
     # setup additional proxies
+    global camProxy
     camProxy = ALProxy("ALVideoDevice", pip, pport)
 
     # initialize motion
     motionProxy.wakeUp()
     postureProxy.goToPosture("StandInit", 0.5)
-
+    # init cameras
+    resolution = vision_definitions.kQQVGA
+    colorSpace = vision_definitions.kRGBColorSpace
+    fps = 10
+    global uppercam
+    global lowercam
+    uppercam = camProxy.subscribeCamera("python_GVM1", TOP, resolution, colorSpace, fps)
+    lowercam = camProxy.subscribeCamera("python_GVM2", BOTTOM, resolution, colorSpace, fps)
     # logic
     while True:
         # showCam(camProxy)
-        im1 = getImage(camProxy, camera)
+        im1 = getImage(camera)
         loc = findObject(im1, BALL)
         print "goal: " + str(findObject(im1, GOAL))
         print "goalie: " + str(findObject(im1, GOALIE))
         val = centerOnBall(loc, camera)
         if val == -1:
             # no ball
-            if camera == 1 and lowball == 1:
+            if camera == BOTTOM and lowball == 1:
                 #kick we had ball on lower and now its gone
                 break
-            if camera == 1 and seeball == 0:
+            if camera == BOTTOM and seeball == 0:
                 # wander no ball in lower or upper
                 print "wander"
                 motionProxy.moveTo(0, 0, .6)
-                camera = 0
+                camera = TOP
             else:
                 # look in lower
-                camera = 1
+                camera = BOTTOM
         elif val == 1:
             # head on move forward
             moveforward(loc, camera, motionProxy)
-            if camera == 1:
+            if camera == BOTTOM:
                 lowball = 1
             seeball = 1
         else:
@@ -212,10 +218,16 @@ def main():
             turnrobot(loc, motionProxy)
             seeball = 1
 
+    # move in for kick
     motionProxy.moveTo(0, -.2, 0)
     motionProxy.moveTo(.14, 0, 0)
     postureProxy.goToPosture("StandInit", 0.5)
     print "kicking now"
+    # cleanup
+    camProxy.releaseImage(uppercam)
+    camProxy.unsubscribe(uppercam)
+    camProxy.releaseImage(lowercam)
+    camProxy.unsubscribe(lowercam)
     # YOUR CODE END
 
     kick()
