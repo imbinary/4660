@@ -11,7 +11,9 @@ import vision_definitions
 
 X = 160/2
 Y = 120/2
-
+BALL = 0
+GOAL = 1
+GOALIE = 2
 
 
 def shift_weight(use_sensor_values):
@@ -75,6 +77,7 @@ def kick():
     path_list.append(list(target_pos.toVector()))
     motionProxy.positionInterpolations(effector, frame, path_list, axis_mask, times)
 
+
 def getImage(camProxy, camera):
     # get an image
     resolution = vision_definitions.kQQVGA
@@ -89,11 +92,19 @@ def getImage(camProxy, camera):
 
     return im
 
-def findBall(im):
-    ORANGE_MIN = np.array([5, 50, 50], np.uint8)
-    ORANGE_MAX = np.array([15, 255, 255], np.uint8)
+
+def findObject(im, item):
+    # default to ball
+    COLOR_MIN = np.array([5, 50, 50], np.uint8)
+    COLOR_MAX = np.array([15, 255, 255], np.uint8)
+    if item == GOAL:
+        COLOR_MIN = np.array([20, 100, 100], np.uint8)
+        COLOR_MAX = np.array([30, 255, 255], np.uint8)
+    if item == GOALIE:
+        COLOR_MIN = np.array([120, 80, 80], np.uint8)
+        COLOR_MAX = np.array([140, 255, 255], np.uint8)
     img2 = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)
-    img2 = cv2.inRange(img2, ORANGE_MIN, ORANGE_MAX)
+    img2 = cv2.inRange(img2, COLOR_MIN, COLOR_MAX)
     mom = cv2.moments(img2)
     x = -1
     y = -1
@@ -103,11 +114,12 @@ def findBall(im):
 
     return x, y
 
+
 def showCam(camProxy):
     im1 = getImage(camProxy, 0)
     im2 = getImage(camProxy, 1)
 
-    loc = findBall(im1)
+    loc = findObject(im1, BALL)
     if loc[0] == -1:
         print "no ball"
     else:
@@ -116,6 +128,7 @@ def showCam(camProxy):
     im = np.concatenate((im1, im2), axis=0)
     cv2.imshow("bottom", im)
     cv2.waitKey(2)
+
 
 def centerOnBall(loc, camera):
     tol = 10
@@ -131,6 +144,8 @@ def centerOnBall(loc, camera):
         return 1
 
     return 0
+
+
 def turnrobot(loc, motionProxy):
     turn = 0.4 *((X-loc[0])/float(X))
     print "turning " + str(turn)
@@ -139,11 +154,11 @@ def turnrobot(loc, motionProxy):
 
 def moveforward(loc, camera, motionProxy):
     dist = 0.6
-    print loc[1]
     if camera == 1:
         dist = 0.45 * ((120.0-loc[1])/120.0)
-
+    print "moving " + str(dist)
     motionProxy.moveTo(dist, 0, 0)
+
 
 def main():
     pip = "127.0.0.1"
@@ -169,7 +184,9 @@ def main():
     while True:
         # showCam(camProxy)
         im1 = getImage(camProxy, camera)
-        loc = findBall(im1)
+        loc = findObject(im1, BALL)
+        print "goal: " + str(findObject(im1, GOAL))
+        print "goalie: " + str(findObject(im1, GOALIE))
         val = centerOnBall(loc, camera)
         if val == -1:
             # no ball
@@ -202,6 +219,6 @@ def main():
     # YOUR CODE END
 
     kick()
-    postureProxy.goToPosture("StandInit", 0.5)
+    postureProxy.goToPosture("StandInit", 0.75)
 if __name__ == "__main__":
     main()
