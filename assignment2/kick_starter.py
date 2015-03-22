@@ -133,7 +133,7 @@ def centerOnBall(loc, camera):
     return 0
 def turnrobot(loc, motionProxy):
     turn = .4*(X-loc[0]/float(X))
-    print "turning"
+    print "turning " + str(turn)
     motionProxy.moveTo(0, 0, turn)
 
 
@@ -148,16 +148,16 @@ def moveforward(loc, camera, motionProxy):
 def main():
     pip = "127.0.0.1"
     pport = 9559
-    camera = 0
-    seeball = 0
-    headon = 0
+
 
     global motionProxy
     motionProxy = ALProxy("ALMotion", pip, pport)
     postureProxy = ALProxy("ALRobotPosture", pip, pport)
     # -------------------------------------------
     # YOUR CODE HERE
-
+    camera = 0
+    seeball = 0
+    lowball = 0
     # setup additional proxies
     camProxy = ALProxy("ALVideoDevice", pip, pport)
 
@@ -173,7 +173,7 @@ def main():
         val = centerOnBall(loc, camera)
         if val == -1:
             # no ball
-            if camera == 1 and seeball == 1:
+            if camera == 1 and lowball == 1:
                 #kick we had ball on lower and now its gone
                 break
             if camera == 1 and seeball == 0:
@@ -187,6 +187,8 @@ def main():
         elif val == 1:
             # head on move forward
             moveforward(loc, camera, motionProxy)
+            if camera == 1:
+                lowball = 1
             seeball = 1
         else:
             # turn
