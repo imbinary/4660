@@ -12,32 +12,68 @@ import vision_definitions
 X = 160/2
 Y = 120/2
 
-def shift_weight(motion_proxy):
-    effectors = ["Head", "Torso"]
-    axis_masks = [almath.AXIS_MASK_ROT, almath.AXIS_MASK_VEL]
-    times = [[2.0], [2.0]]  # seconds
-    paths = [[[0.0, 0.0, 0.0, 0.0, 0.45553, 0.0]],
-             [[0.0, -0.1, -0.02, 0.0, 0.04, 0.0]]]
-    motion_proxy.positionInterpolations(effectors, motion.FRAME_ROBOT, paths, axis_masks, times, False)
-
-    path = [0.0, 0.00, 0.04, 0.0, 0.0, 0.0]
-    motion_proxy.positionInterpolation("LLeg", motion.FRAME_TORSO, path, almath.AXIS_MASK_ALL, 2.0, False)
 
 
-def kick(motion_proxy):
+def shift_weight(use_sensor_values):
+    axis_mask = almath.AXIS_MASK_ALL   # full control
+
+    # Lower the Torso and move to the side
+    effector = "Torso"
+    frame = motion.FRAME_ROBOT
+    times = 2.0     # seconds
     try:
-        shift_weight(motion_proxy)
-
-        path = [-0.10, 0.0, 0.00, 0.0, -0.03, 0.0]
-        motion_proxy.positionInterpolation("LLeg", motion.FRAME_TORSO, path, almath.AXIS_MASK_ALL, 2.0, False)
-
-        path = [[0.15, 0.0, 0.00, 0.0, -0.03, 0.0],
-                [0.24, 0.0, 0.00, 0.0, -0.03, 0.0]]
-        tm = [0.2, 0.3]  # seconds
-        motion_proxy.positionInterpolation("LLeg", motion.FRAME_TORSO, path, almath.AXIS_MASK_ALL, tm, False)
-
+        init_tf = almath.Transform(motionProxy.getTransform(effector, frame, use_sensor_values))
     except Exception as e:
         sys.exit(e)
+    delta_tf = almath.Transform(0.0, -0.06, -0.03)  # x, y, z
+    target_tf = init_tf * delta_tf
+    path = list(target_tf.toVector())
+    motionProxy.transformInterpolations(effector, frame, path, axis_mask, times)
+
+    # Lift LLeg
+    effector = "LLeg"
+    frame = motion.FRAME_TORSO
+    times = 2.0  # seconds
+    try:
+        init_tf = almath.Transform(motionProxy.getTransform(effector, frame, use_sensor_values))
+    except Exception as e:
+        sys.exit(e)
+    delta_tf = almath.Transform(0.0, 0.0, 0.04)
+    target_tf = init_tf * delta_tf
+    path = list(target_tf.toVector())
+    motionProxy.transformInterpolations(effector, frame, path, axis_mask, times)
+
+
+def kick():
+    frame = motion.FRAME_TORSO
+    axis_mask = almath.AXIS_MASK_ALL   # full control
+    use_sensor_values = False
+
+    shift_weight(use_sensor_values)
+
+    # move LLeg back
+    effector = "LLeg"
+    times = 4.0     # seconds
+    current_pos = motionProxy.getPosition(effector, frame, use_sensor_values)
+    target_pos = almath.Position6D(current_pos)
+    target_pos.x -= 0.1
+    target_pos.wy -= 0.03
+    path_list = [list(target_pos.toVector())]
+    motionProxy.positionInterpolations(effector, frame, path_list, axis_mask, times)
+
+    # swing LLeg forward
+    times = [0.2, 0.3]  # seconds
+    current_pos = motionProxy.getPosition(effector, frame, use_sensor_values)
+    target_pos = almath.Position6D(current_pos)
+    target_pos.x += 0.15
+    target_pos.wy -= 0.03
+    path_list = [list(target_pos.toVector())]
+
+    target_pos = almath.Position6D(current_pos)
+    target_pos.x += 0.24
+    target_pos.wy -= 0.03
+    path_list.append(list(target_pos.toVector()))
+    motionProxy.positionInterpolations(effector, frame, path_list, axis_mask, times)
 
 def getImage(camProxy, camera):
     # get an image
@@ -84,9 +120,7 @@ def showCam(camProxy):
 def centerOnBall(loc, camera):
     tol = 10
     if camera == 1:
-        tol = 5
-
-    print loc[0]-X
+        tol = 6
 
     if loc[0] == -1:
         print "no ball"
@@ -117,8 +151,7 @@ def moveforward(loc, camera, motionProxy):
     dist = 0.6
     print loc[1]
     if camera == 1:
-        dist = 0.3 * (120-loc[1]/120)
-
+        dist = 0.3 * ((120.0-loc[1])/120.0)
 
     motionProxy.moveTo(dist, 0, 0)
 
@@ -129,13 +162,14 @@ def main():
     seeball = 0
     headon = 0
 
+    global motionProxy
     motionProxy = ALProxy("ALMotion", pip, pport)
-    camProxy = ALProxy("ALVideoDevice", pip, pport)
     postureProxy = ALProxy("ALRobotPosture", pip, pport)
     # -------------------------------------------
     # YOUR CODE HERE
 
     # setup additional proxies
+    camProxy = ALProxy("ALVideoDevice", pip, pport)
 
     # initialize motion
     motionProxy.wakeUp()
@@ -154,6 +188,7 @@ def main():
                 break
             if camera == 1 and seeball == 0:
                 # wander no ball in lower or upper
+                print "wander"
                 motionProxy.moveTo(0, 0, .6)
                 camera = 0
             else:
@@ -174,7 +209,7 @@ def main():
     print "kicking now"
     # YOUR CODE END
 
-    kick(motionProxy)
-
+    kick()
+    posture_proxy.goToPosture("StandInit", 0.5)
 if __name__ == "__main__":
     main()
