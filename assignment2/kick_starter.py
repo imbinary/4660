@@ -132,7 +132,7 @@ def centerOnBall(loc, camera):
 
     return 0
 def turnrobot(loc, motionProxy):
-    turn = .4*(X-loc[0]/float(X))
+    turn = 0.4 *((X-loc[0])/float(X))
     print "turning " + str(turn)
     motionProxy.moveTo(0, 0, turn)
 
