@@ -1,8 +1,12 @@
+# goalie is robot on port 9560
+# kicker is on port 9559
+#
+#
+
 import sys
 from PIL import Image
 import numpy as np
 import cv2
-import time
 from naoqi import ALProxy
 import motion
 import almath
@@ -78,7 +82,7 @@ def kick():
     path_list.append(list(target_pos.toVector()))
     motionProxy.positionInterpolations(effector, frame, path_list, axis_mask, times)
 
-
+# get an opencv image from selected camera
 def getImage(camera):
     # get an image
     if camera == BOTTOM:
@@ -90,7 +94,7 @@ def getImage(camera):
 
     return im
 
-
+# find the objects BALL, GOAL, GOALIE
 def findObject(im, item):
     # default to ball
     COLOR_MIN = np.array([5, 50, 50], np.uint8)
@@ -112,7 +116,7 @@ def findObject(im, item):
 
     return x, y
 
-
+# show what robot sees and circle ball. for debugging
 def showCam(camProxy):
     im1 = getImage(camProxy, 0)
     im2 = getImage(camProxy, 1)
@@ -127,7 +131,7 @@ def showCam(camProxy):
     cv2.imshow("bottom", im)
     cv2.waitKey(2)
 
-
+# ret 0 if ball is not in center, 1 if it is and -1 if cannot see ball
 def centerOnBall(loc, camera):
     tol = 10
     if camera == BOTTOM:
@@ -143,13 +147,13 @@ def centerOnBall(loc, camera):
 
     return 0
 
-
+# differential turn function
 def turnrobot(loc, motionProxy):
     turn = 0.4 *((X-loc[0])/float(X))
     print "turning " + str(turn)
     motionProxy.moveTo(0, 0, turn)
 
-
+differential move function
 def moveforward(loc, camera, motionProxy):
     dist = 0.6
     if camera == BOTTOM:
@@ -221,7 +225,7 @@ def main():
     # move in for kick
     motionProxy.moveTo(0, -.2, 0)
     motionProxy.moveTo(.14, 0, 0)
-    postureProxy.goToPosture("StandInit", 0.5)
+    postureProxy.goToPosture("StandInit", 0.9)
     print "kicking now"
     # cleanup
     camProxy.releaseImage(uppercam)
